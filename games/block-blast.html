@@ -1,0 +1,230 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Blast - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .bb-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #bb-canvas{border:3px solid #00ffff;box-shadow:0 0 20px rgba(0,255,255,0.4);display:block;margin:0 auto;cursor:pointer;}
+    .bb-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .bb-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
+    .bb-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .next-row{display:flex;gap:12px;justify-content:center;margin-bottom:16px;align-items:center;}
+    .next-canvas{border:2px solid #333;display:block;}
+    .next-label{font-family:'Press Start 2P',monospace;font-size:8px;color:#555;text-align:center;margin-bottom:4px;}
+  </style>
+</head>
+<body data-game="block-blast">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">💥 BLOCK BLAST</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen">
+    <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
+      <h1 style="font-family:'Press Start 2P',monospace;font-size:20px;color:#00ffff;text-shadow:0 0 20px #00ffff;margin-bottom:16px;">💥 BLOCK BLAST</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Tetris-style! Place blocks to fill rows and columns.<br>Blast complete lines for points!<br>Game ends when no blocks fit.</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-bb">0</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST SCORE</span></div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #00ffff;color:#00ffff;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,255,0.1)'" onmouseout="this.style.background='transparent'" onclick="startGame()">▶ PLAY</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="game-screen hidden">
+    <div class="bb-wrap">
+      <div class="bb-info">
+        <div class="bb-stat">SCORE: <span id="bb-score">0</span></div>
+        <div class="bb-stat">LEVEL: <span id="bb-level">1</span></div>
+        <div class="bb-stat">BEST: <span id="bb-best">0</span></div>
+      </div>
+      <div class="next-row" id="piece-queue"></div>
+      <canvas id="bb-canvas" width="360" height="360"></canvas>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#555;margin-top:10px;">DRAG OR CLICK PIECE THEN CLICK BOARD</div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff4444;text-shadow:0 0 15px #ff4444;margin-bottom:16px;">NO MOVES LEFT!</h2>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-bb-score">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">SCORE</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-bb-best">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #00ffff;color:#00ffff;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;transition:all 0.2s;" onclick="startGame()">▶ PLAY AGAIN</button>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const GRID=9,CELL=40;
+  const SHAPES=[
+    [[1]],[[1,1]],[[1],[1]],[[1,1,1]],[[1],[1],[1]],
+    [[1,1],[1,1]],[[1,1,1],[0,0,1]],[[1,1,1],[1,0,0]],
+    [[0,1],[1,1]],[[1,0],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],
+    [[1,1,1,1]],[[1],[1],[1],[1]],
+    [[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],
+    [[1,1,1],[0,1,0]],[[0,1,0],[1,1,1]],
+  ];
+  const COLORS=['#00ffff','#ff00ff','#ffff00','#00ff88','#ff6600','#ff2244','#0088ff','#cc00ff'];
+  let grid,score,level,queue,selected,gameOver;
+
+  function newGrid(){ return Array.from({length:GRID},()=>Array(GRID).fill(0)); }
+
+  function newPiece(){
+    const shape=SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    const color=COLORS[Math.floor(Math.random()*COLORS.length)];
+    return {shape,color};
+  }
+
+  function refillQueue(){ while(queue.length<3) queue.push(newPiece()); }
+
+  function canPlace(piece,gr,gc){
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++){
+      if(!piece.shape[r][c]) continue;
+      const nr=gr+r,nc=gc+c;
+      if(nr<0||nr>=GRID||nc<0||nc>=GRID||grid[nr][nc]) return false;
+    }
+    return true;
+  }
+
+  function place(piece,gr,gc){
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++){
+      if(piece.shape[r][c]) grid[gr+r][gc+c]=piece.color;
+    }
+  }
+
+  function blast(){
+    let lines=0;
+    // rows
+    for(let r=0;r<GRID;r++) if(grid[r].every(c=>c)){grid[r]=Array(GRID).fill(0);lines++;}
+    // cols
+    for(let c=0;c<GRID;c++) if(grid.every(row=>row[c])){ for(let r=0;r<GRID;r++) grid[r][c]=0; lines++; }
+    if(lines>0){
+      const pts=[0,100,250,400,600,900,1300][Math.min(lines,6)]*level;
+      score+=pts;
+      document.getElementById('bb-score').textContent=score;
+      level=Math.floor(score/500)+1;
+      document.getElementById('bb-level').textContent=level;
+      if(typeof PH!=='undefined'&&PH.playWin) PH.playWin();
+    }
+  }
+
+  function hasAnyMove(){
+    return queue.some(piece=>{ for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++) if(canPlace(piece,r,c)) return true; return false; });
+  }
+
+  const canvas=document.getElementById('bb-canvas');
+  const ctx=canvas.getContext('2d');
+  let hoverCell=null;
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // grid bg
+    for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+      ctx.fillStyle=grid[r][c]||((r+c)%2===0?'#0d0020':'#080018');
+      ctx.fillRect(c*CELL,r*CELL,CELL,CELL);
+      if(grid[r][c]){ ctx.shadowBlur=8; ctx.shadowColor=grid[r][c]; ctx.fillStyle=grid[r][c]; ctx.fillRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4); ctx.shadowBlur=0; }
+      ctx.strokeStyle='rgba(0,255,255,0.06)';
+      ctx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+    }
+    // hover preview
+    if(selected&&hoverCell){
+      const {gr,gc}=hoverCell;
+      const can=canPlace(selected,gr,gc);
+      ctx.globalAlpha=0.5;
+      for(let r=0;r<selected.shape.length;r++) for(let c=0;c<selected.shape[r].length;c++){
+        if(!selected.shape[r][c]) continue;
+        const nr=gr+r,nc=gc+c;
+        if(nr<0||nr>=GRID||nc<0||nc>=GRID) continue;
+        ctx.fillStyle=can?selected.color:'#ff4444';
+        ctx.fillRect(nc*CELL+2,nr*CELL+2,CELL-4,CELL-4);
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+
+  function buildQueue(){
+    const container=document.getElementById('piece-queue'); container.innerHTML='';
+    queue.forEach((piece,i)=>{
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:inline-block;cursor:pointer;padding:6px;border:2px solid '+(selected===piece?'#00ffff':'#333')+';background:rgba(0,0,20,0.8);transition:all 0.2s;';
+      const cv=document.createElement('canvas');
+      const cols=piece.shape[0].length, rows=piece.shape.length;
+      const S=24; cv.width=cols*S; cv.height=rows*S;
+      const c=cv.getContext('2d');
+      for(let r=0;r<rows;r++) for(let col=0;col<cols;col++){
+        if(!piece.shape[r][col]) continue;
+        c.fillStyle=piece.color; c.shadowBlur=6; c.shadowColor=piece.color;
+        c.fillRect(col*S+2,r*S+2,S-4,S-4); c.shadowBlur=0;
+      }
+      wrap.appendChild(cv);
+      const lbl=document.createElement('div');
+      lbl.style.cssText='font-family:"Press Start 2P",monospace;font-size:7px;color:#555;text-align:center;margin-top:3px;';
+      lbl.textContent=i===0?'A':i===1?'B':'C';
+      wrap.appendChild(lbl);
+      wrap.onclick=()=>{ selected=piece; buildQueue(); draw(); };
+      container.appendChild(wrap);
+    });
+  }
+
+  canvas.addEventListener('mousemove',e=>{
+    const rect=canvas.getBoundingClientRect();
+    const x=e.clientX-rect.left, y=e.clientY-rect.top;
+    hoverCell={gr:Math.floor(y/CELL),gc:Math.floor(x/CELL)};
+    draw();
+  });
+  canvas.addEventListener('mouseleave',()=>{ hoverCell=null; draw(); });
+  canvas.addEventListener('click',e=>{
+    if(!selected) return;
+    const rect=canvas.getBoundingClientRect();
+    const gc=Math.floor((e.clientX-rect.left)/CELL);
+    const gr=Math.floor((e.clientY-rect.top)/CELL);
+    if(!canPlace(selected,gr,gc)) return;
+    place(selected,gr,gc);
+    const idx=queue.indexOf(selected); queue.splice(idx,1); selected=null;
+    blast(); refillQueue(); buildQueue(); draw();
+    if(!hasAnyMove()) endGame();
+  });
+
+  function endGame(){
+    gameOver=true;
+    const best=Math.max(score,parseInt(localStorage.getItem('bb_best')||'0'));
+    localStorage.setItem('bb_best',best);
+    document.getElementById('final-bb-score').textContent=score;
+    document.getElementById('final-bb-best').textContent=best;
+    if(typeof PH!=='undefined'){ PH.submitScore('block-blast',score); PH.showScreen('screen-end'); }
+  }
+
+  window.startGame=function(){
+    grid=newGrid(); score=0; level=1; queue=[]; selected=null; gameOver=false;
+    for(let i=0;i<3;i++) queue.push(newPiece());
+    document.getElementById('bb-score').textContent=0;
+    document.getElementById('bb-level').textContent=1;
+    const best=localStorage.getItem('bb_best')||0;
+    document.getElementById('bb-best').textContent=best;
+    document.getElementById('best-bb').textContent=best;
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    buildQueue(); draw();
+  };
+
+  document.getElementById('best-bb').textContent=localStorage.getItem('bb_best')||0;
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

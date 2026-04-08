@@ -1,0 +1,213 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balloon Popper - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .bp-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #bp-canvas{border:3px solid #ff00ff;box-shadow:0 0 20px rgba(255,0,255,0.4);display:block;margin:0 auto;cursor:crosshair;}
+    .bp-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .bp-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
+    .bp-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .lives-row{display:flex;gap:6px;justify-content:center;margin-bottom:8px;font-size:20px;}
+  </style>
+</head>
+<body data-game="balloon-popper">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🎈 BALLOON POPPER</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen">
+    <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
+      <h1 style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ff00ff;text-shadow:0 0 20px #ff00ff;margin-bottom:16px;">🎈 BALLOON POPPER</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Pop the balloons before they escape!<br>Gold balloons = bonus points.<br>Don't let too many get away!</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-bp">0</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST SCORE</span></div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #ff00ff;color:#ff00ff;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;" onclick="startGame()">▶ POP!</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="game-screen hidden">
+    <div class="bp-wrap">
+      <div class="bp-info">
+        <div class="bp-stat">SCORE: <span id="bp-score">0</span></div>
+        <div class="bp-stat">LEVEL: <span id="bp-level">1</span></div>
+        <div class="bp-stat">TIMER: <span id="bp-timer">60</span>s</div>
+      </div>
+      <div class="lives-row" id="lives-row"></div>
+      <canvas id="bp-canvas" width="520" height="380"></canvas>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff00ff;text-shadow:0 0 15px #ff00ff;margin-bottom:16px;">TIME'S UP!</h2>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-bp-score">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">SCORE</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-bp-best">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #ff00ff;color:#ff00ff;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;" onclick="startGame()">▶ POP AGAIN</button>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const W=520,H=380;
+  let balloons,score,lives,timeLeft,level,raf,timer,popped,missed,particles;
+
+  const COLORS=['#ff2244','#ff6600','#ffff00','#00ff88','#00ffff','#0088ff','#cc00ff','#ff00ff'];
+
+  function spawnBalloon(){
+    const gold=Math.random()<0.1;
+    const r=gold?28:(16+Math.random()*18);
+    const spd=gold?1.5:(0.6+Math.random()*1.5+level*0.2);
+    return {
+      x:r+Math.random()*(W-r*2), y:H+r*2,
+      r, vy:-spd, vx:(Math.random()-0.5)*0.8,
+      color:gold?'#ffd700':COLORS[Math.floor(Math.random()*COLORS.length)],
+      gold, pts:gold?50:10, wobble:Math.random()*Math.PI*2, alive:true, pop:0
+    };
+  }
+
+  function draw(){
+    const canvas=document.getElementById('bp-canvas');
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#080018'; ctx.fillRect(0,0,W,H);
+    // bg dots
+    for(let i=0;i<8;i++){
+      const bx=((Date.now()/3000*50+i*80)%W+W)%W;
+      ctx.fillStyle='rgba(255,0,255,0.04)';
+      ctx.beginPath(); ctx.arc(bx,50+i*40,3,0,Math.PI*2); ctx.fill();
+    }
+    // particles
+    particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--;
+      ctx.fillStyle=p.color+''+Math.floor(p.life/p.maxLife*255).toString(16).padStart(2,'0');
+      ctx.fillRect(p.x,p.y,p.size,p.size);
+    });
+    // balloons
+    balloons.forEach(b=>{
+      if(b.pop>0){
+        b.pop++;
+        if(b.pop>12) return;
+        const pct=b.pop/12;
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r*(1+pct),0,Math.PI*2);
+        ctx.strokeStyle=b.color; ctx.lineWidth=2;
+        ctx.globalAlpha=1-pct; ctx.stroke(); ctx.globalAlpha=1;
+        return;
+      }
+      // wobble
+      b.wobble+=0.06;
+      const wx=Math.sin(b.wobble)*3;
+      ctx.shadowBlur=15; ctx.shadowColor=b.gold?'#ffd700':b.color;
+      // balloon body
+      ctx.beginPath();
+      ctx.ellipse(b.x+wx, b.y, b.r*0.85, b.r, 0, 0, Math.PI*2);
+      ctx.fillStyle=b.color; ctx.fill();
+      // shine
+      ctx.fillStyle='rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.ellipse(b.x+wx-b.r*0.2, b.y-b.r*0.3, b.r*0.3, b.r*0.2, -0.5, 0, Math.PI*2);
+      ctx.fill();
+      // string
+      ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(b.x+wx,b.y+b.r);
+      ctx.quadraticCurveTo(b.x+wx+8,b.y+b.r+20,b.x+wx,b.y+b.r+36);
+      ctx.stroke();
+      ctx.shadowBlur=0;
+      if(b.gold){ ctx.fillStyle='#ffd700'; ctx.font='bold 12px serif'; ctx.textAlign='center'; ctx.fillText('★',b.x+wx,b.y+4); }
+    });
+    balloons=balloons.filter(b=>!b.pop||b.pop<12);
+  }
+
+  function update(){
+    balloons.forEach(b=>{
+      if(b.pop) return;
+      b.x+=b.vx; b.y+=b.vy;
+      if(b.x<b.r||b.x>W-b.r) b.vx*=-1;
+      if(b.y<-b.r*3){
+        b.alive=false; missed++;
+        if(missed>2){ lives--; missed=0; renderLives(); if(typeof PH!=='undefined'&&PH.playLose)PH.playLose(); }
+        if(lives<=0){ endGame(); return; }
+      }
+    });
+    balloons=balloons.filter(b=>b.alive||b.pop>0);
+    if(Math.random()<0.02+level*0.005) balloons.push(spawnBalloon());
+    raf=requestAnimationFrame(()=>{draw();update();});
+  }
+
+  function popBalloon(b){
+    if(b.pop>0) return;
+    b.pop=1; score+=b.pts; popped++;
+    document.getElementById('bp-score').textContent=score;
+    for(let i=0;i<12;i++) particles.push({x:b.x,y:b.y,vx:(Math.random()-0.5)*8,vy:-3-Math.random()*5,life:20,maxLife:20,color:b.color.slice(0,7),size:4+Math.random()*4});
+    if(typeof PH!=='undefined'&&PH.playClick)PH.playClick();
+    if(popped%10===0){ level++; document.getElementById('bp-level').textContent=level; if(typeof PH!=='undefined'&&PH.playWin)PH.playWin(); }
+  }
+
+  function renderLives(){
+    const el=document.getElementById('lives-row'); el.innerHTML='';
+    for(let i=0;i<3;i++) el.textContent+=(i<lives?'❤️':'🖤');
+  }
+
+  function endGame(){
+    clearInterval(timer); cancelAnimationFrame(raf);
+    const best=Math.max(score,parseInt(localStorage.getItem('bp_best')||'0'));
+    localStorage.setItem('bp_best',best);
+    document.getElementById('final-bp-score').textContent=score;
+    document.getElementById('final-bp-best').textContent=best;
+    if(typeof PH!=='undefined'){ PH.submitScore('balloon-popper',score); PH.showScreen('screen-end'); if(score>200)PH.confetti&&PH.confetti(); }
+  }
+
+  window.startGame=function(){
+    balloons=[]; score=0; lives=3; timeLeft=60; level=1; popped=0; missed=0; particles=[];
+    cancelAnimationFrame(raf); clearInterval(timer);
+    const best=localStorage.getItem('bp_best')||0;
+    document.getElementById('bp-score').textContent=0;
+    document.getElementById('bp-level').textContent=1;
+    document.getElementById('bp-timer').textContent=60;
+    document.getElementById('best-bp').textContent=best;
+    renderLives();
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    timer=setInterval(()=>{
+      timeLeft--;
+      document.getElementById('bp-timer').textContent=timeLeft;
+      if(timeLeft<=0){ clearInterval(timer); cancelAnimationFrame(raf); endGame(); }
+    },1000);
+    const canvas=document.getElementById('bp-canvas');
+    canvas.onclick=e=>{
+      const rect=canvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+      for(const b of balloons){
+        if(b.pop) continue;
+        const dx=mx-b.x, dy=my-b.y;
+        if(dx*dx+dy*dy<b.r*b.r*1.2){ popBalloon(b); break; }
+      }
+    };
+    update();
+  };
+
+  document.getElementById('best-bp').textContent=localStorage.getItem('bp_best')||0;
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

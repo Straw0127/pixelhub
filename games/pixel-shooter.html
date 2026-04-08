@@ -1,0 +1,234 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Shooter - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .ps-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #ps-canvas{border:3px solid #ff2244;box-shadow:0 0 20px rgba(255,34,68,0.4);display:block;margin:0 auto;}
+    .ps-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .ps-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
+    .ps-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .lives-disp{display:flex;gap:4px;justify-content:center;margin-bottom:8px;font-size:18px;}
+    .ps-hint{font-family:'Press Start 2P',monospace;font-size:8px;color:#555;margin-top:8px;}
+  </style>
+</head>
+<body data-game="pixel-shooter">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🔫 PIXEL SHOOTER</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen">
+    <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
+      <h1 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff2244;text-shadow:0 0 20px #ff2244;margin-bottom:16px;">🔫 PIXEL SHOOTER</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Space Invaders-style pixel shooter!<br>WASD / Arrows to move, SPACE to shoot.<br>Survive the waves!</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-ps">0</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST SCORE</span></div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #ff2244;color:#ff2244;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;" onclick="startGame()">▶ SHOOT!</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="game-screen hidden">
+    <div class="ps-wrap">
+      <div class="ps-info">
+        <div class="ps-stat">SCORE: <span id="ps-score">0</span></div>
+        <div class="ps-stat">WAVE: <span id="ps-wave">1</span></div>
+        <div class="ps-stat">BEST: <span id="ps-best">0</span></div>
+      </div>
+      <div class="lives-disp" id="ps-lives"></div>
+      <canvas id="ps-canvas" width="520" height="420"></canvas>
+      <div class="ps-hint">←→ MOVE | SPACE SHOOT | MOBILE: BUTTONS BELOW</div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:10px;">
+        <button style="font-family:'Press Start 2P',monospace;font-size:16px;padding:14px 22px;border:2px solid #333;color:#00ffff;background:rgba(0,0,20,0.8);cursor:pointer;" id="btn-ml">◀</button>
+        <button style="font-family:'Press Start 2P',monospace;font-size:16px;padding:14px 22px;border:2px solid #ff2244;color:#ff2244;background:rgba(20,0,0,0.8);cursor:pointer;" id="btn-fire">🔥</button>
+        <button style="font-family:'Press Start 2P',monospace;font-size:16px;padding:14px 22px;border:2px solid #333;color:#00ffff;background:rgba(0,0,20,0.8);cursor:pointer;" id="btn-mr">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff2244;text-shadow:0 0 15px #ff2244;margin-bottom:16px;">GAME OVER!</h2>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-ps-score">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">SCORE</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-ps-wave">1</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">WAVE</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #ff2244;color:#ff2244;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;" onclick="startGame()">▶ PLAY AGAIN</button>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const W=520,H=420,PW=32,PH=24;
+  let player,bullets,enemies,enemyBullets,score,wave,lives,frame,raf,gameOver,keys={};
+  let particles=[],shootCooldown=0,enemyDir=1,enemyMoveTimer=0;
+
+  function spawnWave(w){
+    enemies=[];
+    const rows=Math.min(3+Math.floor(w/2),5);
+    const cols=Math.min(6+w,10);
+    const colors=['#ff2244','#ff6600','#cc00ff','#0088ff','#00ff88'];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      enemies.push({x:c*50+30,y:r*36+30,w:28,h:22,color:colors[r%colors.length],alive:true,pts:(rows-r)*10});
+    }
+    enemyDir=1; enemyMoveTimer=0;
+  }
+
+  function draw(){
+    const canvas=document.getElementById('ps-canvas');
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#080018'; ctx.fillRect(0,0,W,H);
+    // stars
+    for(let i=0;i<30;i++){
+      const sx=(i*137+frame)%W, sy=(i*73)%H;
+      ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fillRect(sx,sy,2,2);
+    }
+    // particles
+    particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--;
+      if(p.life>0){ ctx.fillStyle=p.color; ctx.globalAlpha=p.life/p.ml; ctx.fillRect(p.x,p.y,p.s,p.s); ctx.globalAlpha=1; }
+    });
+    particles=particles.filter(p=>p.life>0);
+    // enemies
+    enemies.filter(e=>e.alive).forEach(e=>{
+      ctx.shadowBlur=8; ctx.shadowColor=e.color;
+      ctx.fillStyle=e.color;
+      // alien shape
+      ctx.fillRect(e.x,e.y+6,e.w,e.h-8);
+      ctx.fillRect(e.x+4,e.y,e.w-8,8);
+      ctx.fillRect(e.x-4,e.y+8,6,8);
+      ctx.fillRect(e.x+e.w-2,e.y+8,6,8);
+      ctx.fillStyle='#000';
+      ctx.fillRect(e.x+6,e.y+9,5,5);
+      ctx.fillRect(e.x+e.w-11,e.y+9,5,5);
+      ctx.shadowBlur=0;
+    });
+    // bullets
+    bullets.forEach(b=>{ ctx.shadowBlur=8; ctx.shadowColor='#ffff00'; ctx.fillStyle='#ffff00'; ctx.fillRect(b.x-2,b.y,4,12); ctx.shadowBlur=0; });
+    // enemy bullets
+    enemyBullets.forEach(b=>{ ctx.shadowBlur=8; ctx.shadowColor='#ff2244'; ctx.fillStyle='#ff2244'; ctx.fillRect(b.x-2,b.y,4,10); ctx.shadowBlur=0; });
+    // player ship
+    ctx.shadowBlur=15; ctx.shadowColor='#00ffff'; ctx.fillStyle='#00ffff';
+    ctx.fillRect(player.x+PW/2-4,player.y,8,8);
+    ctx.fillRect(player.x+4,player.y+8,PW-8,PH-8);
+    ctx.fillRect(player.x,player.y+PH-8,PW,8);
+    ctx.fillStyle='#0055aa'; ctx.fillRect(player.x+PW/2-6,player.y+10,12,10);
+    ctx.shadowBlur=0;
+  }
+
+  function update(){
+    if(gameOver) return;
+    frame++; shootCooldown=Math.max(0,shootCooldown-1);
+    // player movement
+    const speed=4;
+    if(keys['ArrowLeft']||keys['a']||keys['left']) player.x=Math.max(0,player.x-speed);
+    if(keys['ArrowRight']||keys['d']||keys['right']) player.x=Math.min(W-PW,player.x+speed);
+    if((keys[' ']||keys['fire'])&&shootCooldown===0){ bullets.push({x:player.x+PW/2,y:player.y}); shootCooldown=15; }
+    // bullets
+    bullets.forEach(b=>b.y-=10);
+    bullets=bullets.filter(b=>b.y>-20);
+    // enemy movement
+    enemyMoveTimer++;
+    const moveSpeed=Math.max(0.3,0.8-wave*0.05);
+    if(enemyMoveTimer>Math.floor(60*moveSpeed)){
+      enemyMoveTimer=0;
+      const alive=enemies.filter(e=>e.alive);
+      const maxX=Math.max(...alive.map(e=>e.x));
+      const minX=Math.min(...alive.map(e=>e.x));
+      if((enemyDir>0&&maxX>W-60)||(enemyDir<0&&minX<10)){
+        enemies.forEach(e=>e.y+=20); enemyDir*=-1;
+      } else enemies.forEach(e=>e.alive&&(e.x+=20*enemyDir));
+    }
+    // enemy shoot
+    if(frame%Math.max(30,90-wave*8)===0){
+      const alive=enemies.filter(e=>e.alive);
+      if(alive.length) { const e=alive[Math.floor(Math.random()*alive.length)]; enemyBullets.push({x:e.x+e.w/2,y:e.y+e.h}); }
+    }
+    enemyBullets.forEach(b=>b.y+=5+wave*0.5);
+    // bullet-enemy collisions
+    for(const b of bullets){
+      for(const e of enemies.filter(e=>e.alive)){
+        if(b.x>e.x&&b.x<e.x+e.w&&b.y>e.y&&b.y<e.y+e.h){ e.alive=false; b.dead=true; score+=e.pts; document.getElementById('ps-score').textContent=score; for(let i=0;i<8;i++) particles.push({x:e.x+e.w/2,y:e.y+e.h/2,vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,life:20,ml:20,color:e.color,s:5}); if(typeof PH!=='undefined'&&PH.playClick) PH.playClick(); break; }
+      }
+    }
+    bullets=bullets.filter(b=>!b.dead);
+    // enemy bullet hits player
+    for(const b of enemyBullets){
+      if(b.x>player.x&&b.x<player.x+PW&&b.y>player.y&&b.y<player.y+PH){ b.dead=true; lives--; renderLives(); if(typeof PH!=='undefined'&&PH.playLose) PH.playLose(); if(lives<=0){gameOver=true;cancelAnimationFrame(raf);setTimeout(endGame,400);return;} }
+    }
+    enemyBullets=enemyBullets.filter(b=>!b.dead&&b.y<H+10);
+    // enemy reaches bottom
+    if(enemies.filter(e=>e.alive).some(e=>e.y+e.h>H-60)){
+      gameOver=true; cancelAnimationFrame(raf); setTimeout(endGame,400); return;
+    }
+    // wave clear
+    if(!enemies.some(e=>e.alive)){
+      wave++; document.getElementById('ps-wave').textContent=wave;
+      if(typeof PH!=='undefined'&&PH.playWin) PH.playWin();
+      spawnWave(wave);
+    }
+    draw();
+    raf=requestAnimationFrame(update);
+  }
+
+  function renderLives(){ const el=document.getElementById('ps-lives'); el.innerHTML=''; for(let i=0;i<3;i++) el.textContent+=(i<lives?'💙':'🖤'); }
+
+  function endGame(){
+    const best=Math.max(score,parseInt(localStorage.getItem('ps_best')||'0'));
+    localStorage.setItem('ps_best',best);
+    document.getElementById('final-ps-score').textContent=score;
+    document.getElementById('final-ps-wave').textContent=wave;
+    if(typeof PH!=='undefined'){ PH.submitScore('pixel-shooter',score); PH.showScreen('screen-end'); }
+  }
+
+  document.addEventListener('keydown',e=>{ keys[e.key]=true; if(e.code==='Space') e.preventDefault(); });
+  document.addEventListener('keyup',e=>{ keys[e.key]=false; });
+
+  window.startGame=function(){
+    player={x:W/2-PW/2,y:H-60}; bullets=[]; enemyBullets=[]; score=0; wave=1; lives=3; frame=0; gameOver=false; particles=[];
+    cancelAnimationFrame(raf); keys={};
+    const best=localStorage.getItem('ps_best')||0;
+    document.getElementById('ps-score').textContent=0;
+    document.getElementById('ps-wave').textContent=1;
+    document.getElementById('ps-best').textContent=best;
+    document.getElementById('best-ps').textContent=best;
+    renderLives();
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    spawnWave(1);
+    // mobile
+    document.getElementById('btn-ml').addEventListener('touchstart',e=>{e.preventDefault();keys['left']=true;},{passive:false});
+    document.getElementById('btn-ml').addEventListener('touchend',()=>keys['left']=false);
+    document.getElementById('btn-mr').addEventListener('touchstart',e=>{e.preventDefault();keys['right']=true;},{passive:false});
+    document.getElementById('btn-mr').addEventListener('touchend',()=>keys['right']=false);
+    document.getElementById('btn-fire').addEventListener('touchstart',e=>{e.preventDefault();keys['fire']=true;},{passive:false});
+    document.getElementById('btn-fire').addEventListener('touchend',()=>keys['fire']=false);
+    document.getElementById('btn-ml').onmousedown=()=>keys['left']=true;
+    document.getElementById('btn-ml').onmouseup=()=>keys['left']=false;
+    document.getElementById('btn-mr').onmousedown=()=>keys['right']=true;
+    document.getElementById('btn-mr').onmouseup=()=>keys['right']=false;
+    document.getElementById('btn-fire').onmousedown=()=>keys['fire']=true;
+    document.getElementById('btn-fire').onmouseup=()=>keys['fire']=false;
+    raf=requestAnimationFrame(update);
+  };
+
+  document.getElementById('best-ps').textContent=localStorage.getItem('ps_best')||0;
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Runner - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .run-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #run-canvas{border:3px solid #00ffff;box-shadow:0 0 20px rgba(0,255,255,0.4);display:block;margin:0 auto;cursor:pointer;}
+    .run-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .r-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
+    .r-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .jump-hint{font-family:'Press Start 2P',monospace;font-size:8px;color:#555;margin-top:8px;}
+  </style>
+</head>
+<body data-game="pixel-runner">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🏃 PIXEL RUNNER</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen">
+    <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
+      <h1 style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ff6600;text-shadow:0 0 20px #ff6600;margin-bottom:16px;">🏃 PIXEL RUNNER</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Endless runner! Jump over obstacles and survive.<br>TAP / SPACE / CLICK to jump.<br>Double jump available!</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-runner">0</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST SCORE</span></div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #ff6600;color:#ff6600;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;" onclick="startGame()">▶ RUN!</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="game-screen hidden">
+    <div class="run-wrap">
+      <div class="run-info">
+        <div class="r-stat">SCORE: <span id="run-score">0</span></div>
+        <div class="r-stat">BEST: <span id="run-best">0</span></div>
+        <div class="r-stat">SPEED: <span id="run-speed">1x</span></div>
+      </div>
+      <canvas id="run-canvas" width="560" height="220"></canvas>
+      <div class="jump-hint">TAP / SPACE / CLICK TO JUMP | DOUBLE JUMP!</div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff6600;text-shadow:0 0 15px #ff6600;margin-bottom:16px;">CRASHED!</h2>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-run-score">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">SCORE</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-run-best">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #ff6600;color:#ff6600;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;" onclick="startGame()">▶ RUN AGAIN</button>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const W=560,H=220,GROUND=H-50,PLAYER_W=28,PLAYER_H=34;
+  let player,obstacles,score,speed,frame,gameRunning,raf,lastObs;
+  let particles=[];
+
+  const canvas=()=>document.getElementById('run-canvas');
+  const ctx=()=>canvas().getContext('2d');
+
+  function jump(){
+    if(!gameRunning) return;
+    if(player.jumps>0){ player.vy=-14; player.jumps--; }
+  }
+
+  document.addEventListener('keydown',e=>{ if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); if(!gameRunning) return; jump(); } });
+  document.addEventListener('touchstart',e=>{ e.preventDefault(); if(!gameRunning) return; jump(); },{passive:false});
+
+  function drawPlayer(c){
+    const p=player;
+    // body
+    c.shadowBlur=12; c.shadowColor='#00ffff';
+    c.fillStyle='#00ffff';
+    c.fillRect(p.x,p.y,PLAYER_W,PLAYER_H);
+    // legs animation
+    const legOff=Math.floor(frame/5)%2===0?4:0;
+    c.fillStyle='#0088cc';
+    c.fillRect(p.x+2,p.y+PLAYER_H,8,8+legOff);
+    c.fillRect(p.x+PLAYER_W-10,p.y+PLAYER_H,8,8-legOff);
+    // eyes
+    c.fillStyle='#000';
+    c.fillRect(p.x+PLAYER_W-8,p.y+6,6,6);
+    c.fillStyle='#fff';
+    c.fillRect(p.x+PLAYER_W-7,p.y+7,4,4);
+    c.shadowBlur=0;
+  }
+
+  function spawnObstacle(){
+    const types=[
+      {w:20,h:40,color:'#ff4444'},
+      {w:40,h:24,color:'#ff6600'},
+      {w:16,h:60,color:'#ff2244'},
+      {w:60,h:20,color:'#ff8800'},
+    ];
+    const t=types[Math.floor(Math.random()*types.length)];
+    obstacles.push({x:W+20,y:GROUND-t.h,w:t.w,h:t.h,color:t.color});
+  }
+
+  function update(){
+    if(!gameRunning) return;
+    frame++;
+    // player physics
+    player.vy+=0.7;
+    player.y+=player.vy;
+    if(player.y>=GROUND-PLAYER_H){ player.y=GROUND-PLAYER_H; player.vy=0; player.jumps=2; }
+    // speed increase
+    speed=3+score/200;
+    if(frame%6===0) score++;
+    document.getElementById('run-score').textContent=score;
+    document.getElementById('run-speed').textContent=(Math.floor(speed*10)/10)+'x';
+    // obstacles
+    if(frame-lastObs>Math.max(60,120-speed*10)){ spawnObstacle(); lastObs=frame; }
+    obstacles.forEach(o=>o.x-=speed);
+    obstacles=obstacles.filter(o=>o.x>-100);
+    // particles
+    if(frame%3===0) particles.push({x:player.x,y:player.y+PLAYER_H,vx:-2-Math.random()*3,vy:-1+Math.random()*2,life:20,color:'rgba(0,255,255,'});
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;});
+    particles=particles.filter(p=>p.life>0);
+    // collision
+    for(const o of obstacles){
+      if(player.x+PLAYER_W-4>o.x+4&&player.x+4<o.x+o.w-4&&player.y+PLAYER_H-4>o.y+4&&player.y+4<o.y+o.h-4){
+        gameRunning=false; cancelAnimationFrame(raf);
+        if(typeof PH!=='undefined'&&PH.playLose) PH.playLose();
+        setTimeout(endGame,400); return;
+      }
+    }
+  }
+
+  function draw(){
+    const c=ctx();
+    c.fillStyle='#080018'; c.fillRect(0,0,W,H);
+    // ground
+    c.fillStyle='#1a0040'; c.fillRect(0,GROUND,W,H-GROUND);
+    c.strokeStyle='rgba(0,255,255,0.4)'; c.lineWidth=2;
+    c.beginPath(); c.moveTo(0,GROUND); c.lineTo(W,GROUND); c.stroke();
+    // bg lines
+    for(let i=0;i<5;i++){
+      const lx=((frame*speed*0.3+i*120)%W+W)%W;
+      c.strokeStyle='rgba(0,255,255,0.05)'; c.lineWidth=1;
+      c.beginPath(); c.moveTo(lx,0); c.lineTo(lx,H); c.stroke();
+    }
+    // particles
+    particles.forEach(p=>{ c.fillStyle=p.color+(p.life/20)+')'; c.fillRect(p.x,p.y,4,4); });
+    // obstacles
+    obstacles.forEach(o=>{
+      c.fillStyle=o.color; c.shadowBlur=10; c.shadowColor=o.color;
+      c.fillRect(o.x,o.y,o.w,o.h);
+      c.fillStyle='rgba(255,255,255,0.2)'; c.fillRect(o.x,o.y,o.w,4);
+      c.shadowBlur=0;
+    });
+    drawPlayer(c);
+  }
+
+  function loop(){
+    update(); draw();
+    if(gameRunning) raf=requestAnimationFrame(loop);
+  }
+
+  function endGame(){
+    const best=Math.max(score,parseInt(localStorage.getItem('runner_best')||'0'));
+    localStorage.setItem('runner_best',best);
+    document.getElementById('final-run-score').textContent=score;
+    document.getElementById('final-run-best').textContent=best;
+    if(typeof PH!=='undefined'){ PH.submitScore('pixel-runner',score); PH.showScreen('screen-end'); }
+  }
+
+  window.startGame=function(){
+    player={x:80,y:GROUND-PLAYER_H,vy:0,jumps:2};
+    obstacles=[]; score=0; speed=3; frame=0; lastObs=0; particles=[]; gameRunning=true;
+    const best=localStorage.getItem('runner_best')||0;
+    document.getElementById('run-best').textContent=best;
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    cancelAnimationFrame(raf);
+    // tap to jump on canvas
+    canvas().onclick=()=>jump();
+    loop();
+  };
+
+  document.getElementById('best-runner').textContent=localStorage.getItem('runner_best')||0;
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clicker Game - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .clicker-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px;width:100%;max-width:700px;margin:0 auto}
+    .clicker-layout{display:flex;gap:16px;width:100%;flex-wrap:wrap;justify-content:center}
+    .clicker-left{display:flex;flex-direction:column;align-items:center;gap:12px;flex:0 0 260px}
+    .clicker-right{flex:1;min-width:220px}
+    #pixel-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00ffff,#004455,#000820);border:3px solid var(--neon-cyan);box-shadow:0 0 30px var(--neon-cyan),0 0 60px rgba(0,255,255,0.3),inset 0 0 40px rgba(0,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:70px;transition:transform 0.08s ease;position:relative;overflow:hidden;user-select:none}
+    #pixel-orb:active{transform:scale(0.93)}
+    #pixel-orb:hover{box-shadow:0 0 40px var(--neon-cyan),0 0 80px rgba(0,255,255,0.4)}
+    .orb-inner{position:absolute;inset:0;background:radial-gradient(circle at 65% 65%,rgba(255,255,255,0.1),transparent 60%);border-radius:50%}
+    .cps-display{font-family:'Press Start 2P',monospace;font-size:8px;color:#aac;text-align:center}
+    .pixels-count{font-family:'Press Start 2P',monospace;font-size:18px;color:var(--neon-yellow);text-shadow:0 0 15px var(--neon-yellow);text-align:center}
+    .pixels-label{font-family:'Press Start 2P',monospace;font-size:7px;color:#aac;margin-top:2px}
+    .upgrades-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--neon-green);text-shadow:0 0 8px var(--neon-green);margin-bottom:10px}
+    .upgrade-list{display:flex;flex-direction:column;gap:8px}
+    .upgrade-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid rgba(0,255,136,0.3);background:rgba(0,30,20,0.6);cursor:pointer;transition:all 0.15s;text-align:left;width:100%;color:var(--text-primary);font-family:var(--font-mono)}
+    .upgrade-btn:hover:not(:disabled){border-color:var(--neon-green);background:rgba(0,255,136,0.08);box-shadow:0 0 10px rgba(0,255,136,0.2)}
+    .upgrade-btn:disabled{opacity:0.4;cursor:not-allowed}
+    .upgrade-btn.bought{border-color:rgba(0,255,136,0.6);background:rgba(0,255,136,0.05)}
+    .upg-icon{font-size:22px;flex-shrink:0}
+    .upg-info{flex:1}
+    .upg-name{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--neon-green);display:block;margin-bottom:3px}
+    .upg-desc{font-size:10px;color:#778;display:block}
+    .upg-cost{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--neon-yellow);white-space:nowrap;flex-shrink:0}
+    .upg-count{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--neon-cyan);display:block;margin-top:2px}
+    .prestige-bar-wrap{width:100%;background:rgba(255,255,0,0.1);border:1px solid rgba(255,255,0,0.3);height:8px}
+    .prestige-bar{height:100%;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-magenta));transition:width 0.3s;width:0%}
+    .float-txt{position:fixed;font-family:'Press Start 2P',monospace;font-size:10px;color:var(--neon-cyan);pointer-events:none;z-index:9999;animation:floatUp 1s ease-out forwards}
+    @keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+    .milestone-banner{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--neon-yellow);text-shadow:0 0 10px var(--neon-yellow);text-align:center;padding:8px;border:1px solid var(--neon-yellow);background:rgba(255,255,0,0.05);display:none}
+    @media(max-width:500px){#pixel-orb{width:140px;height:140px;font-size:55px}}
+  </style>
+</head>
+<body data-game="clicker">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">👆 CLICKER</span>
+    <span class="score-display">BEST: <span id="nav-best">0</span></span>
+  </nav>
+
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:460px;margin:40px auto;">
+    <h1>👆 PIXEL CLICKER</h1>
+    <p>Click the orb to earn pixels! Buy upgrades to generate pixels automatically. Build your pixel empire!</p>
+    <div style="margin:16px 0;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;">HIGH SCORE: <span class="neon-yellow" id="best-display">0</span></div>
+    <button class="pixel-btn btn-cyan" onclick="startClicker()"><span class="btn-span">▶ START CLICKING</span></button>
+  </div>
+
+  <div id="screen-game" class="hidden" style="width:100%;">
+    <div class="clicker-wrap">
+      <div id="milestone-banner" class="milestone-banner"></div>
+      <div class="clicker-layout">
+        <div class="clicker-left">
+          <div class="pixels-count" id="pixel-count">0</div>
+          <div class="pixels-label">PIXELS</div>
+          <div id="pixel-orb" onclick="clickOrb(event)"><div class="orb-inner"></div>🎮</div>
+          <div class="cps-display">+<span id="click-power">1</span> PER CLICK</div>
+          <div class="cps-display"><span id="cps-disp">0</span> PIXELS/SEC</div>
+          <div style="width:100%">
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#aac;margin-bottom:4px">TOTAL: <span id="total-earned">0</span></div>
+            <div class="prestige-bar-wrap"><div class="prestige-bar" id="prestige-bar"></div></div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,0,0.5);margin-top:3px">PRESTIGE AT 1,000,000</div>
+          </div>
+          <button class="pixel-btn btn-yellow" onclick="endClicker()" style="font-size:8px;padding:8px 14px"><span class="btn-span">💾 SAVE SCORE</span></button>
+        </div>
+        <div class="clicker-right">
+          <div class="upgrades-title">>> UPGRADES <<</div>
+          <div class="upgrade-list" id="upgrade-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden" style="position:relative;max-width:460px;margin:40px auto;">
+    <h1>💾 SCORE SAVED!</h1>
+    <span class="final-score" id="end-score">0</span>
+    <p id="end-msg"></p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+      <button class="pixel-btn btn-cyan" onclick="startClicker()"><span class="btn-span">▶ PLAY AGAIN</span></button>
+      <a href="../index.html" class="pixel-btn btn-yellow"><span class="btn-span">◀ MENU</span></a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+
+<script>
+const UPGRADES=[
+  {id:'cursor',  icon:'🖱️',name:'CURSOR',     desc:'+1 per click',    baseCost:10,    cpsBonus:0,   clickBonus:1},
+  {id:'pixel',   icon:'🟦',name:'PIXEL FARM', desc:'1 pixel/sec',     baseCost:50,    cpsBonus:1,   clickBonus:0},
+  {id:'sprite',  icon:'👾',name:'SPRITE',     desc:'5 pixels/sec',    baseCost:200,   cpsBonus:5,   clickBonus:0},
+  {id:'tile',    icon:'🧱',name:'TILE ENGINE',desc:'20 pixels/sec',   baseCost:800,   cpsBonus:20,  clickBonus:0},
+  {id:'shader',  icon:'✨',name:'SHADER',     desc:'+10 per click',   baseCost:500,   cpsBonus:0,   clickBonus:10},
+  {id:'gpu',     icon:'⚡',name:'GPU FARM',   desc:'100 pixels/sec',  baseCost:3000,  cpsBonus:100, clickBonus:0},
+  {id:'quantum', icon:'🔮',name:'QUANTUM BIT',desc:'500 pixels/sec',  baseCost:12000, cpsBonus:500, clickBonus:0},
+  {id:'matrix',  icon:'🌐',name:'MATRIX CORE',desc:'+100 per click',  baseCost:5000,  cpsBonus:0,   clickBonus:100},
+  {id:'singularity',icon:'🌀',name:'SINGULARITY',desc:'5000 px/sec', baseCost:100000,cpsBonus:5000,clickBonus:0},
+];
+
+let pixels=0,totalEarned=0,clickPower=1,cps=0,counts={},gameInterval,prestigeCount=0,lastMilestone=0;
+
+function getCost(upg,n){return Math.floor(upg.baseCost*Math.pow(1.35,n))}
+
+function recalcStats(){
+  clickPower=1; cps=0;
+  UPGRADES.forEach(u=>{const n=counts[u.id]||0;clickPower+=u.clickBonus*n;cps+=u.cpsBonus*n;});
+  document.getElementById('click-power').textContent=clickPower;
+  document.getElementById('cps-disp').textContent=cps;
+}
+
+function renderUpgrades(){
+  const list=document.getElementById('upgrade-list');list.innerHTML='';
+  UPGRADES.forEach(u=>{
+    const n=counts[u.id]||0,cost=getCost(u,n),canAfford=pixels>=cost;
+    const btn=document.createElement('button');
+    btn.className='upgrade-btn'+(n>0?' bought':'');btn.disabled=!canAfford;
+    btn.innerHTML=`<span class="upg-icon">${u.icon}</span><span class="upg-info"><span class="upg-name">${u.name}</span><span class="upg-desc">${u.desc}</span><span class="upg-count">${n>0?'OWNED: '+n:''}</span></span><span class="upg-cost">${formatNum(cost)} PX</span>`;
+    btn.onclick=()=>buyUpgrade(u);list.appendChild(btn);
+  });
+}
+
+function buyUpgrade(upg){
+  const n=counts[upg.id]||0,cost=getCost(upg,n);
+  if(pixels<cost)return;
+  pixels-=cost;counts[upg.id]=n+1;
+  recalcStats();renderUpgrades();updateDisplay();
+  PH.playBeep&&PH.playBeep(660,0.12,'sine',0.12);
+}
+
+function clickOrb(e){
+  pixels+=clickPower;totalEarned+=clickPower;
+  updateDisplay();renderUpgrades();
+  const ft=document.createElement('div');ft.className='float-txt';
+  ft.textContent='+'+clickPower;ft.style.left=(e.clientX-10)+'px';ft.style.top=(e.clientY-10)+'px';
+  document.body.appendChild(ft);setTimeout(()=>ft.remove(),1000);
+  PH.playBeep&&PH.playBeep(440+Math.random()*200,0.05,'square',0.06);
+  checkMilestones();
+}
+
+function formatNum(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n)}
+
+function updateDisplay(){
+  document.getElementById('pixel-count').textContent=formatNum(pixels);
+  document.getElementById('total-earned').textContent=formatNum(totalEarned);
+  document.getElementById('prestige-bar').style.width=Math.min(100,(totalEarned/1000000)*100)+'%';
+}
+
+const MILESTONES=[100,1000,10000,100000,1000000];
+function checkMilestones(){
+  MILESTONES.forEach(m=>{
+    if(totalEarned>=m&&lastMilestone<m){lastMilestone=m;showMilestone('🏆 '+formatNum(m)+' PIXELS EARNED!');PH.playWin&&PH.playWin();}
+  });
+  if(totalEarned>=1000000)doPrestige();
+}
+
+function doPrestige(){
+  prestigeCount++;pixels=0;totalEarned=0;counts={};
+  clickPower=1+prestigeCount*5;cps=0;lastMilestone=0;
+  recalcStats();renderUpgrades();updateDisplay();
+  showMilestone('⚡ PRESTIGE #'+prestigeCount+'! +'+prestigeCount*5+' BASE CLICK!');
+  PH.confetti&&PH.confetti();
+}
+
+function showMilestone(msg){
+  const el=document.getElementById('milestone-banner');
+  el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+function startClicker(){
+  pixels=0;totalEarned=0;clickPower=1;cps=0;counts={};lastMilestone=0;prestigeCount=0;
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-end').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  recalcStats();renderUpgrades();updateDisplay();
+  clearInterval(gameInterval);
+  gameInterval=setInterval(()=>{
+    if(cps>0){const gain=cps/20;pixels+=gain;totalEarned+=gain;updateDisplay();renderUpgrades();checkMilestones();}
+  },50);
+  document.getElementById('best-display').textContent=PH.getHighScore('clicker');
+  document.getElementById('nav-best').textContent=PH.getHighScore('clicker');
+}
+
+function endClicker(){
+  clearInterval(gameInterval);
+  const score=Math.floor(totalEarned);
+  const isNew=PH.setHighScore('clicker',score);
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-end').classList.remove('hidden');
+  document.getElementById('end-score').textContent=formatNum(score)+' PX';
+  document.getElementById('end-msg').textContent='Prestige: '+prestigeCount+' | CPS: '+cps+(isNew?' 🏆 NEW HIGH SCORE!':'');
+  document.getElementById('nav-best').textContent=PH.getHighScore('clicker');
+  PH.playWin&&PH.playWin();
+  if(isNew)PH.confetti&&PH.confetti();
+}
+
+document.getElementById('best-display').textContent=PH.getHighScore('clicker');
+document.getElementById('nav-best').textContent=PH.getHighScore('clicker');
+</script>
+</body>
+</html>

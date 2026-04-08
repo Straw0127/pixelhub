@@ -1,0 +1,286 @@
+/* ========================================
+   PIXELHUB - ANIMATIONS CSS
+   ======================================== */
+
+/* === ENTRANCE ANIMATIONS === */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pixelReveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0% 0 0); }
+}
+
+/* === CARD STAGGER ANIMATION === */
+.game-card {
+  animation: fadeInUp 0.5s ease both;
+}
+
+.game-card:nth-child(1)  { animation-delay: 0.05s; }
+.game-card:nth-child(2)  { animation-delay: 0.10s; }
+.game-card:nth-child(3)  { animation-delay: 0.15s; }
+.game-card:nth-child(4)  { animation-delay: 0.20s; }
+.game-card:nth-child(5)  { animation-delay: 0.25s; }
+.game-card:nth-child(6)  { animation-delay: 0.30s; }
+.game-card:nth-child(7)  { animation-delay: 0.35s; }
+.game-card:nth-child(8)  { animation-delay: 0.40s; }
+.game-card:nth-child(9)  { animation-delay: 0.45s; }
+.game-card:nth-child(10) { animation-delay: 0.50s; }
+
+/* === GLITCH EFFECT === */
+@keyframes glitch {
+  0% { text-shadow: 0.05em 0 0 #ff00ff, -0.05em -0.025em 0 #00ffff; }
+  14% { text-shadow: 0.05em 0 0 #ff00ff, -0.05em -0.025em 0 #00ffff; }
+  15% { text-shadow: -0.05em -0.025em 0 #ff00ff, 0.025em 0.025em 0 #00ffff; }
+  49% { text-shadow: -0.05em -0.025em 0 #ff00ff, 0.025em 0.025em 0 #00ffff; }
+  50% { text-shadow: 0.025em 0.05em 0 #ff00ff, 0.05em 0 0 #00ffff; }
+  99% { text-shadow: 0.025em 0.05em 0 #ff00ff, 0.05em 0 0 #00ffff; }
+  100% { text-shadow: -0.025em 0 0 #ff00ff, -0.025em -0.025em 0 #00ffff; }
+}
+
+.glitch-text {
+  animation: glitch 1.5s infinite steps(1);
+}
+
+/* === NEON PULSE === */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 10px currentColor, 0 0 25px currentColor, 0 0 50px currentColor; }
+}
+
+.neon-pulse { animation: neonPulse 2s ease-in-out infinite; }
+
+/* === BLINK === */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.blink { animation: blink 1s step-end infinite; }
+.blink-slow { animation: blink 2s step-end infinite; }
+
+/* === SPINNING === */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin { animation: spin 2s linear infinite; }
+.spin-slow { animation: spin 6s linear infinite; }
+
+/* === BOUNCE === */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.bounce { animation: bounce 1s ease-in-out infinite; }
+
+/* === WIN ANIMATION === */
+@keyframes winFlash {
+  0%, 100% { background: transparent; }
+  25% { background: rgba(0,255,255,0.1); }
+  75% { background: rgba(255,255,0,0.1); }
+}
+
+.win-flash { animation: winFlash 0.5s ease 3; }
+
+/* === SCORE POP === */
+@keyframes scorePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+.score-pop { animation: scorePop 0.3s ease; }
+
+/* === CARD FLIP === */
+.card-flip {
+  perspective: 1000px;
+}
+
+.card-flip-inner {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* === SCAN LINE WIPE === */
+@keyframes scanWipe {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0% 0); }
+}
+
+/* === TYPING CURSOR === */
+@keyframes typeCursor {
+  from { border-right-color: var(--neon-cyan); }
+  to { border-right-color: transparent; }
+}
+
+.type-cursor {
+  border-right: 3px solid var(--neon-cyan);
+  animation: typeCursor 0.7s step-end infinite;
+  padding-right: 4px;
+}
+
+/* === RAINBOW GLOW === */
+@keyframes rainbowGlow {
+  0%   { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; }
+  20%  { text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00; }
+  40%  { text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; }
+  60%  { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
+  80%  { text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff; }
+  100% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; }
+}
+
+.rainbow { animation: rainbowGlow 3s linear infinite; }
+
+/* === HERO ENTRANCE === */
+.hero-title { animation: fadeInDown 0.8s ease both; }
+.hero-subtitle { animation: fadeInDown 0.8s 0.2s ease both; }
+.hero-stats { animation: fadeInUp 0.8s 0.4s ease both; }
+.section-header { animation: fadeIn 0.8s 0.6s ease both; }
+
+/* === PAGE TRANSITION === */
+.page-exit {
+  animation: fadeIn 0.3s ease reverse forwards;
+}
+
+.page-enter {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* === LOADING DOTS === */
+@keyframes loadingDot {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.loading-dots span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--neon-cyan);
+  margin: 0 4px;
+  animation: loadingDot 1.2s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* === GAME SPECIFIC ANIMATIONS === */
+
+/* Chess */
+@keyframes chessPieceDrop {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Memory */
+@keyframes cardMatch {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 0 20px var(--neon-green); }
+}
+
+/* Snake */
+@keyframes snakeEat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Breakout */
+@keyframes blockHit {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+/* Clicker */
+@keyframes clickBurst {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+.click-burst {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--neon-cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: clickBurst 0.5s ease-out forwards;
+}
+
+/* === HOVER LIFT === */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* === PIXEL EXPLOSION === */
+@keyframes pixelExplode {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* === BORDER MARCH === */
+@keyframes borderMarch {
+  from { background-position: 0 0, 100% 0, 100% 100%, 0 100%; }
+  to { background-position: 100% 0, 100% 100%, 0 100%, 0 0; }
+}
+
+/* === CRT TURN ON === */
+@keyframes crtOn {
+  0% { transform: scaleY(0.005) scaleX(1); filter: brightness(30); }
+  60% { transform: scaleY(1.05) scaleX(0.995); filter: brightness(1.5); }
+  80% { transform: scaleY(0.98) scaleX(1.01); filter: brightness(1.1); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.crt-on { animation: crtOn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }

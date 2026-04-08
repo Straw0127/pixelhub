@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .snake-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px; }
+    #snake-canvas { image-rendering:pixelated; }
+    .mobile-controls { display:grid; grid-template-areas:'. up .' 'left . right' '. down .'; gap:6px; margin-top:8px; }
+    .ctrl-btn { width:50px; height:50px; background:rgba(0,255,136,0.1); border:2px solid rgba(0,255,136,0.4); color:#00ff88; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
+    .ctrl-btn:active { background:rgba(0,255,136,0.3); box-shadow:0 0 15px rgba(0,255,136,0.4); }
+    .ctrl-up { grid-area:up; }
+    .ctrl-down { grid-area:down; }
+    .ctrl-left { grid-area:left; }
+    .ctrl-right { grid-area:right; }
+    .snake-stats { display:flex; gap:20px; }
+    .snake-stat { font-family:'Press Start 2P',monospace; font-size:10px; text-align:center; }
+    .snake-stat-num { display:block; font-size:20px; color:#00ff88; text-shadow:0 0 10px #00ff88; }
+    .snake-stat span { color:#aac; display:block; margin-top:3px; }
+    @media(min-width:600px){ .mobile-controls{display:none;} }
+  </style>
+</head>
+<body data-game="snake">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🐍 SNAKE</span>
+    <span class="score-display">BEST: <span id="nav-best">0</span></span>
+  </nav>
+
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1>🐍 SNAKE</h1>
+    <p>Eat food to grow! Avoid walls and your own tail. How long can you survive?</p>
+    <p style="margin-top:8px;color:#00ff88;font-size:11px;">Arrow keys or WASD to move. Swipe on mobile.</p>
+    <div style="margin:16px 0;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;">HIGH SCORE: <span class="neon-green" id="best-display">0</span></div>
+    <button class="pixel-btn btn-green" onclick="startSnake()"><span class="btn-span">▶ START GAME</span></button>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div class="snake-wrap">
+      <div class="snake-stats">
+        <div class="snake-stat"><span class="snake-stat-num" id="score-disp">0</span><span>SCORE</span></div>
+        <div class="snake-stat"><span class="snake-stat-num" style="color:#ffff00;text-shadow:0 0 10px #ffff00" id="length-disp">1</span><span>LENGTH</span></div>
+        <div class="snake-stat"><span class="snake-stat-num" style="color:#ff00ff;text-shadow:0 0 10px #ff00ff" id="level-disp">1</span><span>LEVEL</span></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="snake-canvas"></canvas>
+      </div>
+      <div class="mobile-controls">
+        <button class="ctrl-btn ctrl-up" onclick="setDir(0,-1)">▲</button>
+        <button class="ctrl-btn ctrl-left" onclick="setDir(-1,0)">◀</button>
+        <button class="ctrl-btn ctrl-right" onclick="setDir(1,0)">▶</button>
+        <button class="ctrl-btn ctrl-down" onclick="setDir(0,1)">▼</button>
+      </div>
+      <button class="pixel-btn btn-green" onclick="startSnake()" style="margin-top:4px;"><span class="btn-span">↺ RESTART</span></button>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1>💀 GAME OVER!</h1>
+    <span class="final-score" id="end-score">0</span>
+    <p id="end-msg"></p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+      <button class="pixel-btn btn-green" onclick="startSnake()"><span class="btn-span">▶ PLAY AGAIN</span></button>
+      <a href="../index.html" class="pixel-btn btn-cyan"><span class="btn-span">◀ MENU</span></a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+
+<script>
+const GRID=20, CELL=Math.min(Math.floor((Math.min(window.innerWidth,500)-40)/GRID),20);
+const W=GRID*CELL, H=GRID*CELL;
+let canvas, ctx, snake, dir, nextDir, food, special, score, gameLoop, alive, level;
+let particles=[];
+
+function startSnake(){
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-end').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  
+  canvas=document.getElementById('snake-canvas');
+  canvas.width=W; canvas.height=H;
+  ctx=canvas.getContext('2d');
+  
+  snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir={x:1,y:0}; nextDir={x:1,y:0};
+  score=0; alive=true; level=1; particles=[];
+  special=null;
+  placeFood();
+  updateHUD();
+  clearInterval(gameLoop);
+  gameLoop=setInterval(tick,130);
+  PH.playClick&&PH.playClick();
+  
+  // Swipe
+  PH.onSwipe&&PH.onSwipe(canvas,(d)=>{
+    if(d==='left'&&dir.x!==1) nextDir={x:-1,y:0};
+    if(d==='right'&&dir.x!==-1) nextDir={x:1,y:0};
+    if(d==='up'&&dir.y!==1) nextDir={x:0,y:-1};
+    if(d==='down'&&dir.y!==-1) nextDir={x:0,y:1};
+  });
+}
+
+function setDir(dx,dy){
+  if(dx===1&&dir.x!==-1) nextDir={x:1,y:0};
+  if(dx===-1&&dir.x!==1) nextDir={x:-1,y:0};
+  if(dy===-1&&dir.y!==1) nextDir={x:0,y:-1};
+  if(dy===1&&dir.y!==-1) nextDir={x:0,y:1};
+}
+
+function placeFood(){
+  do{ food={x:PH.randInt(0,GRID-1),y:PH.randInt(0,GRID-1)}; }
+  while(snake.some(s=>s.x===food.x&&s.y===food.y));
+  if(score>0&&score%50===0) placeSpecial();
+}
+
+function placeSpecial(){
+  do{ special={x:PH.randInt(0,GRID-1),y:PH.randInt(0,GRID-1),timer:60}; }
+  while(snake.some(s=>s.x===special.x&&s.y===special.y));
+}
+
+function tick(){
+  dir={...nextDir};
+  const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  
+  // Wall collision
+  if(head.x<0||head.x>=GRID||head.y<0||head.y>=GRID){
+    endSnake(); return;
+  }
+  // Self collision
+  if(snake.some(s=>s.x===head.x&&s.y===head.y)){
+    endSnake(); return;
+  }
+  
+  snake.unshift(head);
+  let ate=false;
+  if(head.x===food.x&&head.y===food.y){
+    score+=10*level; ate=true;
+    spawnParticles(head.x*CELL+CELL/2,head.y*CELL+CELL/2,'#00ff88');
+    PH.playBeep&&PH.playBeep(660,0.1,'sine',0.1);
+    placeFood();
+    level=Math.floor(score/100)+1;
+    clearInterval(gameLoop);
+    gameLoop=setInterval(tick,Math.max(60,130-level*10));
+  }
+  if(special&&head.x===special.x&&head.y===special.y){
+    score+=50*level; ate=true;
+    spawnParticles(head.x*CELL+CELL/2,head.y*CELL+CELL/2,'#ffff00');
+    PH.playBeep&&PH.playBeep(880,0.15,'sine',0.15);
+    special=null;
+  }
+  if(!ate) snake.pop();
+  if(special){ special.timer--; if(special.timer<=0) special=null; }
+  
+  updateHUD();
+  draw();
+}
+
+function spawnParticles(x,y,color){
+  for(let i=0;i<8;i++){
+    const angle=Math.random()*Math.PI*2;
+    particles.push({x,y,vx:Math.cos(angle)*3,vy:Math.sin(angle)*3,life:20,color});
+  }
+}
+
+function draw(){
+  // Background
+  ctx.fillStyle='#080015';
+  ctx.fillRect(0,0,W,H);
+  
+  // Grid
+  ctx.strokeStyle='rgba(0,255,136,0.04)';
+  ctx.lineWidth=1;
+  for(let i=0;i<=GRID;i++){
+    ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(W,i*CELL); ctx.stroke();
+  }
+  
+  // Snake
+  snake.forEach((seg,i)=>{
+    const t=i/snake.length;
+    const r=0, g=Math.floor(200+55*(1-t)), b=Math.floor(100*(1-t));
+    ctx.fillStyle=`rgb(${r},${g},${b})`;
+    ctx.shadowColor='#00ff88'; ctx.shadowBlur=i===0?15:6;
+    ctx.fillRect(seg.x*CELL+1,seg.y*CELL+1,CELL-2,CELL-2);
+    // Head detail
+    if(i===0){
+      ctx.fillStyle='rgba(255,255,255,0.8)';
+      ctx.shadowBlur=0;
+      const ew=3,eh=3;
+      ctx.fillRect(seg.x*CELL+4,seg.y*CELL+4,ew,eh);
+      ctx.fillRect(seg.x*CELL+CELL-7,seg.y*CELL+4,ew,eh);
+    }
+  });
+  ctx.shadowBlur=0;
+  
+  // Food
+  ctx.shadowColor='#ff4444'; ctx.shadowBlur=15;
+  ctx.fillStyle='#ff4444';
+  ctx.fillRect(food.x*CELL+2,food.y*CELL+2,CELL-4,CELL-4);
+  ctx.fillStyle='#ff8888';
+  ctx.fillRect(food.x*CELL+4,food.y*CELL+4,4,4);
+  ctx.shadowBlur=0;
+  
+  // Special food
+  if(special){
+    const pulse=Math.sin(Date.now()/150)*0.4+0.8;
+    ctx.shadowColor='#ffff00'; ctx.shadowBlur=20*pulse;
+    ctx.fillStyle=`rgba(255,255,0,${pulse})`;
+    ctx.fillRect(special.x*CELL+1,special.y*CELL+1,CELL-2,CELL-2);
+    ctx.font='bold '+(CELL-4)+'px monospace';
+    ctx.fillStyle='#000';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('★',special.x*CELL+CELL/2,special.y*CELL+CELL/2);
+    ctx.shadowBlur=0;
+  }
+  
+  // Particles
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    ctx.fillStyle=p.color; ctx.globalAlpha=p.life/20;
+    ctx.fillRect(p.x-2,p.y-2,4,4);
+    p.x+=p.vx; p.y+=p.vy; p.life--;
+  });
+  ctx.globalAlpha=1;
+}
+
+function updateHUD(){
+  document.getElementById('score-disp').textContent=score;
+  document.getElementById('length-disp').textContent=snake.length;
+  document.getElementById('level-disp').textContent=level;
+}
+
+function endSnake(){
+  clearInterval(gameLoop); alive=false;
+  PH.playLose&&PH.playLose();
+  PH.shake&&PH.shake();
+  setTimeout(()=>{
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-end').classList.remove('hidden');
+    document.getElementById('end-score').textContent=score+' PTS';
+    const isNew=PH.setHighScore('snake',score);
+    document.getElementById('end-msg').textContent=
+      `Length: ${snake.length} | Level: ${level}${isNew?' 🏆 NEW HIGH SCORE!':''}`;
+    document.getElementById('nav-best').textContent=PH.getHighScore('snake');
+  },600);
+}
+
+document.addEventListener('keydown',e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(e.key)) e.preventDefault();
+  if(e.key==='ArrowLeft'||e.key==='a') setDir(-1,0);
+  if(e.key==='ArrowRight'||e.key==='d') setDir(1,0);
+  if(e.key==='ArrowUp'||e.key==='w') setDir(0,-1);
+  if(e.key==='ArrowDown'||e.key==='s') setDir(0,1);
+});
+
+document.getElementById('best-display').textContent=PH.getHighScore('snake');
+document.getElementById('nav-best').textContent=PH.getHighScore('snake');
+</script>
+</body>
+</html>

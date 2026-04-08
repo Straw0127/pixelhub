@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .typing-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px; max-width:680px; margin:0 auto; width:100%; }
+    .word-display { font-family:'Share Tech Mono',monospace; font-size:clamp(16px,2.5vw,22px); line-height:2; padding:20px; background:#050010; border:2px solid rgba(0,136,255,0.3); width:100%; min-height:120px; position:relative; overflow:hidden; }
+    .word-char { display:inline; }
+    .word-char.correct { color:#00ff88; }
+    .word-char.incorrect { color:#ff4444; background:rgba(255,68,68,0.2); }
+    .word-char.current { color:#fff; border-bottom:2px solid #0088ff; animation:typeCursor 0.7s step-end infinite; }
+    .word-char.pending { color:#444; }
+    .typing-input { background:#050010; border:2px solid rgba(0,136,255,0.4); color:#0088ff; font-family:'Share Tech Mono',monospace; font-size:clamp(14px,2.5vw,18px); padding:14px 20px; width:100%; outline:none; transition:all 0.2s; caret-color:#0088ff; }
+    .typing-input:focus { border-color:#0088ff; box-shadow:0 0 15px rgba(0,136,255,0.3); }
+    .typing-input:disabled { opacity:0.5; }
+    .typing-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; width:100%; }
+    .typing-stat { text-align:center; padding:12px; background:#050010; border:2px solid rgba(0,136,255,0.2); }
+    .typing-stat-num { font-family:'Press Start 2P',monospace; font-size:clamp(14px,3vw,22px); display:block; }
+    .typing-stat-label { font-size:9px; color:#aac; font-family:'Press Start 2P',monospace; letter-spacing:1px; display:block; margin-top:4px; }
+    .wpm-num { color:#0088ff; text-shadow:0 0 10px #0088ff; }
+    .acc-num { color:#00ff88; text-shadow:0 0 10px #00ff88; }
+    .time-num { color:#ffff00; text-shadow:0 0 10px #ffff00; }
+    .correct-num { color:#ff00ff; text-shadow:0 0 10px #ff00ff; }
+    .duration-btns { display:flex; gap:10px; justify-content:center; }
+    .dur-btn { font-family:'Press Start 2P',monospace; font-size:8px; padding:8px 16px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .dur-btn.active { border-color:#0088ff; color:#0088ff; box-shadow:0 0 8px rgba(0,136,255,0.3); }
+    .progress-track { width:100%; height:6px; background:rgba(0,136,255,0.15); }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#0088ff,#00ffff); box-shadow:0 0 8px #0088ff; transition:width 0.5s ease; }
+  </style>
+</head>
+<body data-game="typing-game">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">⌨ TYPING SPEED</span>
+    <span class="score-display">BEST: <span id="nav-best">0</span> WPM</span>
+  </nav>
+
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1>⌨ TYPING SPEED</h1>
+    <p>Type the displayed text as fast and accurately as possible. Your WPM is measured!</p>
+    <div style="margin:20px 0;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:12px;letter-spacing:2px;">DURATION:</div>
+      <div class="duration-btns">
+        <button class="dur-btn active" data-time="30">30s</button>
+        <button class="dur-btn" data-time="60">60s</button>
+        <button class="dur-btn" data-time="120">2min</button>
+      </div>
+    </div>
+    <div style="margin:12px 0;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;">
+      BEST WPM: <span class="neon-blue" id="best-display">0</span>
+    </div>
+    <button class="pixel-btn btn-blue" style="border-color:#0088ff;color:#0088ff;box-shadow:0 0 10px rgba(0,136,255,0.3);" onclick="startTyping()"><span class="btn-span">▶ START GAME</span></button>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div class="typing-wrap">
+      <div class="typing-stats">
+        <div class="typing-stat">
+          <span class="typing-stat-num wpm-num" id="wpm-disp">0</span>
+          <span class="typing-stat-label">WPM</span>
+        </div>
+        <div class="typing-stat">
+          <span class="typing-stat-num acc-num" id="acc-disp">100%</span>
+          <span class="typing-stat-label">ACCURACY</span>
+        </div>
+        <div class="typing-stat">
+          <span class="typing-stat-num time-num" id="time-disp">60</span>
+          <span class="typing-stat-label">SECONDS</span>
+        </div>
+        <div class="typing-stat">
+          <span class="typing-stat-num correct-num" id="correct-disp">0</span>
+          <span class="typing-stat-label">CORRECT</span>
+        </div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:100%"></div></div>
+      <div class="word-display" id="word-display"></div>
+      <input type="text" class="typing-input" id="typing-input" placeholder="START TYPING TO BEGIN..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <div style="font-size:9px;color:#444;font-family:'Press Start 2P',monospace;text-align:center;">TYPE THE TEXT ABOVE | TIMER STARTS ON FIRST KEYSTROKE</div>
+      <button class="pixel-btn" style="border-color:#0088ff;color:#0088ff;" onclick="startTyping()"><span class="btn-span">↺ RESTART</span></button>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1>⌨ RESULTS!</h1>
+    <span class="final-score" id="end-wpm">0 WPM</span>
+    <div style="display:flex;gap:20px;justify-content:center;margin:16px 0;flex-wrap:wrap;">
+      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:9px;">
+        <span style="color:#00ff88;font-size:20px;display:block;" id="end-acc">100%</span>
+        <span style="color:#aac;">ACCURACY</span>
+      </div>
+      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:9px;">
+        <span style="color:#ff00ff;font-size:20px;display:block;" id="end-chars">0</span>
+        <span style="color:#aac;">CHARS/MIN</span>
+      </div>
+    </div>
+    <p id="end-msg"></p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+      <button class="pixel-btn" style="border-color:#0088ff;color:#0088ff;" onclick="startTyping()"><span class="btn-span">▶ PLAY AGAIN</span></button>
+      <a href="../index.html" class="pixel-btn btn-cyan"><span class="btn-span">◀ MENU</span></a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+
+<script>
+const TEXTS=[
+  "the quick brown fox jumps over the lazy dog while the sun sets on the horizon painting the sky in brilliant shades of orange and purple",
+  "pixels and neon lights flicker in the arcade hall as players battle for the highest score testing their skills against machines and each other",
+  "space explorers travel through distant galaxies discovering new worlds and ancient civilizations hidden among the countless stars of the universe",
+  "in the digital realm where code becomes reality the boundaries between human imagination and artificial creation blur into something truly magical",
+  "the retro arcade machines hum with electric energy as the sounds of classic games echo through the hall bringing back memories of simpler times",
+  "pressing buttons and moving joysticks the player enters a state of pure focus where only the game exists and time seems to slow to a crawl",
+  "neon signs glow in the rain soaked streets below as hackers write code that will change the world one line at a time into something beautiful",
+  "every great journey begins with a single step and every great game begins with a single coin dropped into the slot of an arcade machine",
+];
+
+let text='', typed='', charIdx=0, started=false, timer=null, timeLeft=60, duration=60;
+let correct=0, incorrect=0, totalTyped=0;
+
+function startTyping(){
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-end').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  
+  duration=parseInt(document.querySelector('.dur-btn.active').dataset.time);
+  timeLeft=duration; started=false;
+  typed=''; charIdx=0; correct=0; incorrect=0; totalTyped=0;
+  text=PH.shuffle(TEXTS)[0];
+  
+  clearInterval(timer);
+  document.getElementById('time-disp').textContent=duration;
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('wpm-disp').textContent=0;
+  document.getElementById('acc-disp').textContent='100%';
+  document.getElementById('correct-disp').textContent=0;
+  
+  const input=document.getElementById('typing-input');
+  input.value=''; input.disabled=false;
+  renderText();
+  setTimeout(()=>input.focus(),100);
+}
+
+function renderText(){
+  const el=document.getElementById('word-display');
+  el.innerHTML='';
+  text.split('').forEach((ch,i)=>{
+    const span=document.createElement('span');
+    span.className='word-char';
+    if(i<charIdx){
+      // Already typed
+      span.classList.add(text[i]===typed[i]?'correct':'incorrect');
+    } else if(i===charIdx){
+      span.classList.add('current');
+    } else {
+      span.classList.add('pending');
+    }
+    span.textContent=ch;
+    el.appendChild(span);
+  });
+  // Scroll to current char
+  const current=el.querySelector('.current');
+  if(current) current.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+
+function handleInput(e){
+  const input=e.target;
+  if(!started && input.value.length>0){
+    started=true;
+    timer=setInterval(()=>{
+      timeLeft--;
+      document.getElementById('time-disp').textContent=timeLeft;
+      document.getElementById('prog-fill').style.width=(timeLeft/duration*100)+'%';
+      if(timeLeft<=0){ clearInterval(timer); endTyping(); }
+      updateStats();
+    },1000);
+  }
+  
+  const val=input.value;
+  typed=val;
+  charIdx=val.length;
+  
+  // Count correct/incorrect
+  let c=0, ic=0;
+  for(let i=0;i<val.length;i++){
+    if(val[i]===text[i]) c++;
+    else ic++;
+  }
+  correct=c; incorrect=ic; totalTyped=val.length;
+  
+  // Play sound on correct character
+  if(val.length>typed.length-1&&val.length>0){
+    const last=val[val.length-1];
+    const expected=text[val.length-1];
+    if(last===expected) PH.playBeep&&PH.playBeep(600+correct*2,0.03,'sine',0.05);
+    else PH.playBeep&&PH.playBeep(200,0.08,'sawtooth',0.06);
+  }
+  
+  // If completed text
+  if(val.length>=text.length){
+    clearInterval(timer);
+    endTyping();
+    return;
+  }
+  
+  renderText();
+  updateStats();
+}
+
+function updateStats(){
+  const elapsed=duration-timeLeft;
+  if(elapsed>0){
+    const minutes=elapsed/60;
+    const wordsDone=Math.floor(correct/5);
+    const wpm=Math.round(wordsDone/minutes)||0;
+    document.getElementById('wpm-disp').textContent=wpm;
+  }
+  const acc=totalTyped>0?Math.round((correct/totalTyped)*100):100;
+  document.getElementById('acc-disp').textContent=acc+'%';
+  document.getElementById('correct-disp').textContent=correct;
+}
+
+function endTyping(){
+  document.getElementById('typing-input').disabled=true;
+  const elapsed=Math.max(1,(duration-timeLeft));
+  const minutes=elapsed/60;
+  const wordsDone=Math.floor(correct/5);
+  const wpm=Math.round(wordsDone/minutes)||0;
+  const acc=totalTyped>0?Math.round((correct/totalTyped)*100):100;
+  const cpm=Math.round((correct/minutes));
+  
+  setTimeout(()=>{
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-end').classList.remove('hidden');
+    document.getElementById('end-wpm').textContent=wpm+' WPM';
+    document.getElementById('end-acc').textContent=acc+'%';
+    document.getElementById('end-chars').textContent=cpm;
+    const isNew=PH.setHighScore('typing-game',wpm);
+    document.getElementById('end-msg').textContent=
+      `Typed ${correct} correct chars in ${elapsed}s!${isNew?' 🏆 NEW RECORD!':''}`;
+    document.getElementById('nav-best').textContent=PH.getHighScore('typing-game');
+    if(wpm>60) PH.confetti&&PH.confetti();
+    if(wpm>40) PH.playWin&&PH.playWin();
+  },500);
+}
+
+document.getElementById('typing-input')?.addEventListener('input',handleInput);
+document.getElementById('typing-input')?.addEventListener('paste',e=>e.preventDefault());
+
+document.querySelectorAll('.dur-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    PH.playClick&&PH.playClick();
+  });
+});
+
+document.getElementById('best-display').textContent=PH.getHighScore('typing-game');
+document.getElementById('nav-best').textContent=PH.getHighScore('typing-game');
+</script>
+</body>
+</html>

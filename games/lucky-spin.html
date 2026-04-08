@@ -1,0 +1,251 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Spin - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .spin-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #spin-canvas{display:block;margin:0 auto;cursor:pointer;}
+    .coins-big{font-family:'Press Start 2P',monospace;font-size:20px;color:#ffff00;text-shadow:0 0 15px #ffff00;margin:12px 0;}
+    .bet-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0;}
+    .bet-chip{font-family:'Press Start 2P',monospace;font-size:8px;padding:8px 14px;border:2px solid #333;color:#555;background:transparent;cursor:pointer;transition:all 0.2s;}
+    .bet-chip.active,.bet-chip:hover{border-color:#ffff00;color:#ffff00;box-shadow:0 0 10px rgba(255,255,0,0.4);}
+    .spin-btn-big{font-family:'Press Start 2P',monospace;font-size:13px;padding:16px 48px;border:3px solid #ff00ff;color:#ff00ff;background:transparent;cursor:pointer;letter-spacing:2px;transition:all 0.2s;margin:12px;}
+    .spin-btn-big:hover:not(:disabled){background:rgba(255,0,255,0.1);box-shadow:0 0 25px rgba(255,0,255,0.5);transform:scale(1.05);}
+    .spin-btn-big:disabled{opacity:0.4;cursor:not-allowed;}
+    .result-banner{font-family:'Press Start 2P',monospace;font-size:16px;min-height:32px;letter-spacing:2px;transition:all 0.3s;}
+    .streak-row{font-family:'Press Start 2P',monospace;font-size:9px;color:#ff00ff;text-shadow:0 0 8px #ff00ff;margin:8px 0;}
+    .pointer{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:24px solid #fff;filter:drop-shadow(0 0 6px #fff);z-index:10;}
+    .wheel-wrap{position:relative;display:inline-block;margin:8px;}
+    .tab-row{display:flex;gap:0;justify-content:center;margin-bottom:16px;}
+    .tab-btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:10px 20px;border:2px solid #333;color:#555;background:transparent;cursor:pointer;transition:all 0.2s;}
+    .tab-btn.active{border-color:#ff00ff;color:#ff00ff;background:rgba(255,0,255,0.05);}
+    .coin-section,.wheel-section{display:none;}
+    .coin-section.active,.wheel-section.active{display:block;}
+    .big-coin{width:120px;height:120px;border-radius:50%;border:6px solid #ffff00;box-shadow:0 0 30px rgba(255,255,0,0.6);display:flex;align-items:center;justify-content:center;font-size:56px;margin:16px auto;font-family:'Press Start 2P',monospace;transition:all 0.1s;cursor:pointer;}
+    .big-coin:hover{transform:scale(1.05);}
+    @keyframes coinFlip{0%{transform:scaleX(1);}25%{transform:scaleX(0.1);}50%{transform:scaleX(1);}75%{transform:scaleX(0.1);}100%{transform:scaleX(1);}}
+    .flipping{animation:coinFlip 0.6s ease;}
+    .coin-choice-row{display:flex;gap:16px;justify-content:center;margin:12px 0;}
+    .choice-btn{font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 24px;border:3px solid #333;color:#555;background:transparent;cursor:pointer;transition:all 0.2s;}
+    .choice-btn.active{border-color:#ffff00;color:#ffff00;box-shadow:0 0 12px rgba(255,255,0,0.4);}
+  </style>
+</head>
+<body data-game="lucky-spin">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🎰 LUCKY SPIN</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-game" class="game-screen">
+    <div class="spin-wrap">
+      <div class="coins-big">💰 <span id="ls-coins">500</span></div>
+      <div class="streak-row">🔥 STREAK: <span id="ls-streak">0</span> | BEST: <span id="ls-best">0</span></div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('wheel',this)">🎡 WHEEL</button>
+        <button class="tab-btn" onclick="switchTab('coin',this)">🪙 COIN FLIP</button>
+      </div>
+
+      <!-- WHEEL -->
+      <div class="wheel-section active" id="wheel-section">
+        <div class="wheel-wrap">
+          <div class="pointer"></div>
+          <canvas id="spin-canvas" width="300" height="300"></canvas>
+        </div>
+        <div class="bet-row">
+          <button class="bet-chip active" data-v="10" onclick="selectBet(10,this)">10</button>
+          <button class="bet-chip" data-v="25" onclick="selectBet(25,this)">25</button>
+          <button class="bet-chip" data-v="50" onclick="selectBet(50,this)">50</button>
+          <button class="bet-chip" data-v="100" onclick="selectBet(100,this)">100</button>
+        </div>
+        <button class="spin-btn-big" id="spin-wheel-btn" onclick="spinWheel()">🎡 SPIN!</button>
+      </div>
+
+      <!-- COIN FLIP -->
+      <div class="coin-section" id="coin-section">
+        <div class="big-coin" id="big-coin" onclick="flipCoin()">🪙</div>
+        <div class="coin-choice-row">
+          <button class="choice-btn active" id="btn-heads" onclick="selectCoin('heads',this)">👑 HEADS</button>
+          <button class="choice-btn" id="btn-tails" onclick="selectCoin('tails',this)">🌊 TAILS</button>
+        </div>
+        <div class="bet-row">
+          <button class="bet-chip active" data-v="10" onclick="selectBet(10,this)">10</button>
+          <button class="bet-chip" data-v="25" onclick="selectBet(25,this)">25</button>
+          <button class="bet-chip" data-v="50" onclick="selectBet(50,this)">50</button>
+          <button class="bet-chip" data-v="100" onclick="selectBet(100,this)">100</button>
+        </div>
+        <button class="spin-btn-big" id="flip-btn" onclick="flipCoin()">🪙 FLIP!</button>
+      </div>
+
+      <div class="result-banner" id="ls-result"></div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff4444;text-shadow:0 0 15px #ff4444;margin-bottom:16px;">BROKE!</h2>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;margin-bottom:24px;">You ran out of coins!</p>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="ls-peak">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">PEAK</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:18px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="ls-best-final">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST STREAK</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px;border:2px solid #ff00ff;color:#ff00ff;background:transparent;cursor:pointer;width:100%;" onclick="initGame()">▶ PLAY AGAIN</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const SEGMENTS=[
+    {label:'2x',mult:2,color:'#00ffff',prob:0.2},
+    {label:'MISS',mult:0,color:'#330022',prob:0.3},
+    {label:'1.5x',mult:1.5,color:'#0088ff',prob:0.25},
+    {label:'3x',mult:3,color:'#ff00ff',prob:0.1},
+    {label:'MISS',mult:0,color:'#330022',prob:0.25},
+    {label:'5x',mult:5,color:'#ffff00',prob:0.05},
+    {label:'MISS',mult:0,color:'#220033',prob:0.3},
+    {label:'1.5x',mult:1.5,color:'#00ff88',prob:0.25},
+    {label:'10x',mult:10,color:'#ff6600',prob:0.02},
+    {label:'MISS',mult:0,color:'#220022',prob:0.25},
+  ];
+  const N=SEGMENTS.length;
+  let coins=500,bet=10,streak=0,bestStreak=0,peakCoins=500;
+  let spinning=false,angle=0,vel=0,tab='wheel',coinChoice='heads';
+
+  function saveBest(){ const b=parseInt(localStorage.getItem('ls_best_streak')||'0'); if(bestStreak>b) localStorage.setItem('ls_best_streak',bestStreak); }
+
+  window.switchTab=function(t,el){
+    tab=t;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active');
+    document.getElementById('wheel-section').classList.toggle('active',t==='wheel');
+    document.getElementById('coin-section').classList.toggle('active',t==='coin');
+  };
+  window.selectBet=function(v,el){ bet=v; document.querySelectorAll('.bet-chip').forEach(b=>b.classList.remove('active')); el.classList.add('active'); };
+  window.selectCoin=function(c,el){ coinChoice=c; document.getElementById('btn-heads').classList.toggle('active',c==='heads'); document.getElementById('btn-tails').classList.toggle('active',c==='tails'); };
+
+  // WHEEL
+  const canvas=document.getElementById('spin-canvas');
+  const ctx=canvas.getContext('2d');
+  const R=140,cx=150,cy=150;
+  const segAngle=Math.PI*2/N;
+
+  function drawWheel(){
+    ctx.clearRect(0,0,300,300);
+    SEGMENTS.forEach((seg,i)=>{
+      const a=angle+i*segAngle;
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,a,a+segAngle); ctx.closePath();
+      ctx.fillStyle=seg.color; ctx.fill();
+      ctx.strokeStyle='rgba(0,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(a+segAngle/2);
+      ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.font='bold 11px "Press Start 2P",monospace';
+      ctx.shadowBlur=4; ctx.shadowColor=seg.color;
+      ctx.fillText(seg.label,R-8,4); ctx.restore();
+    });
+    ctx.beginPath(); ctx.arc(cx,cy,20,0,Math.PI*2);
+    ctx.fillStyle='#0a0020'; ctx.fill();
+    ctx.strokeStyle='#00ffff'; ctx.lineWidth=3; ctx.stroke();
+  }
+
+  function getResult(){
+    // segment at top (angle 0 points right, top is -PI/2)
+    const normAngle=((-angle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+    const topAngle=(normAngle+Math.PI*2*1.5)%(Math.PI*2);
+    const idx=Math.floor(topAngle/segAngle)%N;
+    return SEGMENTS[idx];
+  }
+
+  window.spinWheel=function(){
+    if(spinning) return;
+    if(coins<bet){ showResult('NOT ENOUGH COINS','#ff4444'); return; }
+    coins-=bet; update();
+    spinning=true; document.getElementById('spin-wheel-btn').disabled=true;
+    // Pick target based on weighted random
+    vel=20+Math.random()*20;
+    function animate(){
+      angle+=vel*(Math.PI/180);
+      vel*=0.985;
+      drawWheel();
+      if(vel>0.5){ requestAnimationFrame(animate); }
+      else {
+        spinning=false; document.getElementById('spin-wheel-btn').disabled=false;
+        const seg=getResult();
+        if(seg.mult>0){
+          const won=Math.floor(bet*seg.mult);
+          coins+=won; streak++; bestStreak=Math.max(bestStreak,streak); peakCoins=Math.max(peakCoins,coins);
+          showResult('🎉 '+seg.label+'! +'+won+' COINS','#00ff88');
+          if(typeof PH!=='undefined'&&PH.playWin) PH.playWin();
+          if(seg.mult>=5&&typeof PH!=='undefined'&&PH.confetti) PH.confetti();
+        } else { streak=0; showResult('MISS! -'+bet+' COINS','#ff4444'); if(typeof PH!=='undefined'&&PH.playLose) PH.playLose(); }
+        update();
+        if(coins<=0){ saveBest(); setTimeout(showEnd,1200); }
+      }
+    }
+    animate();
+  };
+
+  // COIN FLIP
+  window.flipCoin=function(){
+    if(spinning) return;
+    if(coins<bet){ showResult('NOT ENOUGH COINS','#ff4444'); return; }
+    coins-=bet; update();
+    spinning=true;
+    document.getElementById('flip-btn').disabled=true;
+    const coin=document.getElementById('big-coin');
+    coin.classList.add('flipping');
+    setTimeout(()=>{
+      coin.classList.remove('flipping');
+      const result=Math.random()<0.5?'heads':'tails';
+      coin.textContent=result==='heads'?'👑':'🌊';
+      if(result===coinChoice){ const won=bet*2; coins+=won; streak++; bestStreak=Math.max(bestStreak,streak); peakCoins=Math.max(peakCoins,coins); showResult('✓ '+result.toUpperCase()+'! +'+won,'#00ff88'); if(typeof PH!=='undefined'&&PH.playWin) PH.playWin(); }
+      else { streak=0; showResult('✗ '+result.toUpperCase()+'! -'+bet,'#ff4444'); if(typeof PH!=='undefined'&&PH.playLose) PH.playLose(); }
+      spinning=false;
+      document.getElementById('flip-btn').disabled=false;
+      update();
+      if(coins<=0){ saveBest(); setTimeout(showEnd,1200); }
+    },700);
+  };
+
+  function showResult(msg,color){
+    const el=document.getElementById('ls-result'); el.textContent=msg; el.style.color=color;
+  }
+  function update(){
+    document.getElementById('ls-coins').textContent=coins;
+    document.getElementById('ls-streak').textContent=streak;
+    document.getElementById('ls-best').textContent=bestStreak;
+  }
+  function showEnd(){
+    document.getElementById('ls-peak').textContent=peakCoins;
+    document.getElementById('ls-best-final').textContent=bestStreak;
+    if(typeof PH!=='undefined') PH.submitScore('lucky-spin',peakCoins);
+    if(typeof PH!=='undefined') PH.showScreen('screen-end');
+  }
+
+  window.initGame=function(){
+    coins=500; bet=10; streak=0; bestStreak=0; peakCoins=500; spinning=false;
+    document.getElementById('ls-result').textContent='';
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    update(); drawWheel();
+  };
+
+  drawWheel();
+  update();
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

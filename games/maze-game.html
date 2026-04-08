@@ -1,0 +1,190 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maze Game - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .maze-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
+    #maze-canvas{border:3px solid #00ffff;box-shadow:0 0 20px rgba(0,255,255,0.4);display:block;margin:0 auto;}
+    .maze-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .m-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
+    .m-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .d-pad{display:grid;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px);gap:4px;justify-content:center;margin-top:16px;}
+    .d-btn{font-family:'Press Start 2P',monospace;font-size:16px;border:2px solid #333;color:#00ffff;background:rgba(0,0,20,0.8);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;}
+    .d-btn:active{background:rgba(0,255,255,0.2);border-color:#00ffff;}
+  </style>
+</head>
+<body data-game="maze-game">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🌀 MAZE</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen">
+    <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
+      <h1 style="font-family:'Press Start 2P',monospace;font-size:20px;color:#00ff88;text-shadow:0 0 20px #00ff88;margin-bottom:16px;">🌀 MAZE</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Navigate the pixel maze to the exit.<br>Use arrow keys or D-pad.<br>5 levels — each harder than the last!</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-maze">--:--</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST TIME</span></div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #00ff88;color:#00ff88;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;" onclick="startGame()">▶ PLAY</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="game-screen hidden">
+    <div class="maze-wrap">
+      <div class="maze-info">
+        <div class="m-stat">LEVEL: <span id="maze-level">1</span>/5</div>
+        <div class="m-stat">TIME: <span id="maze-time">0:00</span></div>
+        <div class="m-stat">STEPS: <span id="maze-steps">0</span></div>
+      </div>
+      <canvas id="maze-canvas"></canvas>
+      <div class="d-pad">
+        <div></div><button class="d-btn" onclick="move(0,-1)">▲</button><div></div>
+        <button class="d-btn" onclick="move(-1,0)">◀</button>
+        <button class="d-btn" onclick="move(0,1)">▼</button>
+        <button class="d-btn" onclick="move(1,0)">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-end" class="game-screen hidden">
+    <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#00ff88;text-shadow:0 0 15px #00ff88;margin-bottom:16px;">ESCAPED!</h2>
+      <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-maze-time">0:00</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">TIME</span></div>
+        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:18px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-maze-steps">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">STEPS</span></div>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #00ff88;color:#00ff88;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;" onclick="startGame()">▶ PLAY AGAIN</button>
+      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+    </div>
+  </div>
+</div>
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const LEVEL_SIZES=[11,13,15,17,19];
+  let maze,cols,rows,player,exit_pos,level,steps,startTime,timerInterval,totalTime;
+
+  // Recursive backtracker maze gen
+  function generateMaze(w,h){
+    // w,h must be odd
+    const m=Array.from({length:h},()=>Array(w).fill(1));
+    function carve(x,y){
+      m[y][x]=0;
+      const dirs=[[0,-2],[0,2],[-2,0],[2,0]].sort(()=>Math.random()-.5);
+      for(const [dx,dy] of dirs){
+        const nx=x+dx,ny=y+dy;
+        if(nx>=0&&nx<w&&ny>=0&&ny<h&&m[ny][nx]===1){ m[y+dy/2][x+dx/2]=0; carve(nx,ny); }
+      }
+    }
+    carve(1,1);
+    return m;
+  }
+
+  const CELL=Math.min(20,Math.floor((window.innerWidth-40)/19));
+
+  function draw(){
+    const canvas=document.getElementById('maze-canvas');
+    canvas.width=cols*CELL; canvas.height=rows*CELL;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#080018'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      if(maze[r][c]===1){ ctx.fillStyle='#1a0040'; ctx.shadowBlur=0; ctx.fillRect(c*CELL,r*CELL,CELL,CELL); ctx.strokeStyle='rgba(0,255,255,0.15)'; ctx.strokeRect(c*CELL,r*CELL,CELL,CELL); }
+    }
+    // exit
+    ctx.fillStyle='#00ff88'; ctx.shadowBlur=15; ctx.shadowColor='#00ff88';
+    ctx.fillRect(exit_pos.c*CELL+2,exit_pos.r*CELL+2,CELL-4,CELL-4);
+    ctx.shadowBlur=0;
+    // player
+    ctx.fillStyle='#00ffff'; ctx.shadowBlur=12; ctx.shadowColor='#00ffff';
+    ctx.beginPath();
+    ctx.arc(player.c*CELL+CELL/2,player.r*CELL+CELL/2,CELL/2-3,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  window.move=function(dc,dr){
+    const nc=player.c+dc, nr=player.r+dr;
+    if(nc<0||nc>=cols||nr<0||nr>=rows||maze[nr][nc]===1) return;
+    player={r:nr,c:nc}; steps++;
+    document.getElementById('maze-steps').textContent=steps;
+    draw();
+    if(nr===exit_pos.r&&nc===exit_pos.c) nextLevel();
+  };
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'||e.key==='a') move(-1,0);
+    else if(e.key==='ArrowRight'||e.key==='d') move(1,0);
+    else if(e.key==='ArrowUp'||e.key==='w') move(0,-1);
+    else if(e.key==='ArrowDown'||e.key==='s') move(0,1);
+  });
+
+  function nextLevel(){
+    if(typeof PH!=='undefined'&&PH.playWin) PH.playWin();
+    if(level>=5){ endGame(); return; }
+    level++;
+    document.getElementById('maze-level').textContent=level;
+    initLevel();
+  }
+
+  function initLevel(){
+    const size=LEVEL_SIZES[level-1];
+    cols=size; rows=size;
+    maze=generateMaze(cols,rows);
+    player={r:1,c:1};
+    exit_pos={r:rows-2,c:cols-2};
+    maze[rows-2][cols-2]=0;
+    steps=0;
+    document.getElementById('maze-steps').textContent=0;
+    draw();
+  }
+
+  function updateTimer(){
+    const elapsed=Math.floor((Date.now()-startTime)/1000);
+    totalTime=elapsed;
+    const m=Math.floor(elapsed/60), s=elapsed%60;
+    document.getElementById('maze-time').textContent=m+':'+(s<10?'0':'')+s;
+  }
+
+  function endGame(){
+    clearInterval(timerInterval);
+    const m=Math.floor(totalTime/60), s=totalTime%60;
+    const timeStr=m+':'+(s<10?'0':'')+s;
+    document.getElementById('final-maze-time').textContent=timeStr;
+    document.getElementById('final-maze-steps').textContent=steps;
+    const best=localStorage.getItem('maze_best');
+    if(!best||totalTime<parseInt(best)){ localStorage.setItem('maze_best',totalTime); document.getElementById('best-maze').textContent=timeStr; }
+    // Lower time = better; convert to inverted score for leaderboard
+    const mazeScore=Math.max(0,3600-totalTime)*10;
+    if(typeof PH!=='undefined'){ PH.submitScore('maze-game',mazeScore); PH.showScreen('screen-end'); PH.confetti&&PH.confetti(); }
+  }
+
+  window.startGame=function(){
+    level=1; steps=0;
+    startTime=Date.now(); clearInterval(timerInterval);
+    timerInterval=setInterval(updateTimer,1000);
+    if(typeof PH!=='undefined') PH.showScreen('screen-game');
+    document.getElementById('maze-level').textContent=1;
+    initLevel();
+  };
+
+  const best=localStorage.getItem('maze_best');
+  if(best){ const m=Math.floor(parseInt(best)/60),s=parseInt(best)%60; document.getElementById('best-maze').textContent=m+':'+(s<10?'0':'')+s; }
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>

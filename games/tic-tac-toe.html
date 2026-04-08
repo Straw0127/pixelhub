@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(360px,80vw); height:min(360px,80vw); margin:20px auto; }
+    .ttt-cell { background:#120020; border:2px solid rgba(255,0,255,0.3); display:flex; align-items:center; justify-content:center; font-size:min(70px,14vw); cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+    .ttt-cell:hover:not(.taken) { background:#1e0030; border-color:#ff00ff; box-shadow:inset 0 0 20px rgba(255,0,255,0.1); }
+    .ttt-cell.x-cell { color:#00ffff; text-shadow:0 0 15px #00ffff,0 0 30px #00ffff; border-color:#00ffff; }
+    .ttt-cell.o-cell { color:#ff00ff; text-shadow:0 0 15px #ff00ff,0 0 30px #ff00ff; border-color:#ff00ff; }
+    .ttt-cell.winner { background:rgba(255,255,0,0.1) !important; border-color:#ffff00 !important; animation:winCellPulse 0.5s ease infinite alternate; }
+    @keyframes winCellPulse { from{box-shadow:inset 0 0 10px rgba(255,255,0,0.2);} to{box-shadow:inset 0 0 30px rgba(255,255,0,0.5);} }
+    .ttt-cell.pop { animation:cellPop 0.2s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes cellPop { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }
+    .score-board { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; width:min(360px,80vw); margin:10px auto; }
+    .score-box { text-align:center; padding:12px; border:2px solid; }
+    .score-box.x-box { border-color:#00ffff; }
+    .score-box.o-box { border-color:#ff00ff; }
+    .score-num { font-family:'Press Start 2P',monospace; font-size:24px; display:block; }
+    .score-box.x-box .score-num { color:#00ffff; text-shadow:0 0 10px #00ffff; }
+    .score-box.o-box .score-num { color:#ff00ff; text-shadow:0 0 10px #ff00ff; }
+    .score-lbl { font-size:9px; color:#aac; font-family:'Press Start 2P',monospace; letter-spacing:1px; display:block; margin-top:4px; }
+    .vs-txt { font-family:'Press Start 2P',monospace; font-size:14px; color:#555; }
+    .mode-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .mode-btn { font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 18px; border:2px solid #555; color:#555; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .mode-btn.active { border-color:#ff00ff; color:#ff00ff; box-shadow:0 0 10px rgba(255,0,255,0.3); }
+    .turn-bar { font-family:'Press Start 2P',monospace; font-size:11px; letter-spacing:2px; height:30px; text-align:center; }
+    .draw-box { border-color:#555; }
+    .draw-box .score-num { color:#888; }
+  </style>
+</head>
+<body data-game="tic-tac-toe">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">⭕ TIC-TAC-TOE</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:420px;margin:40px auto;">
+    <h1>⭕ TIC-TAC-TOE</h1>
+    <p>Classic X vs O. Get 3 in a row to win!</p>
+    <div style="margin:20px 0;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:12px;letter-spacing:2px;">SELECT MODE:</div>
+      <div class="mode-btns">
+        <button class="mode-btn active" data-mode="ai">VS AI</button>
+        <button class="mode-btn" data-mode="pvp">2 PLAYERS</button>
+      </div>
+    </div>
+    <button class="pixel-btn btn-magenta mt-16" onclick="startGame()"><span class="btn-span">▶ START GAME</span></button>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px;">
+      <div class="score-board">
+        <div class="score-box x-box">
+          <span class="score-num" id="score-x">0</span>
+          <span class="score-lbl" id="label-x">PLAYER X</span>
+        </div>
+        <div class="score-box draw-box" style="border-color:#444;padding:8px;">
+          <span class="score-num" id="score-draw" style="color:#666;">0</span>
+          <span class="score-lbl">DRAW</span>
+        </div>
+        <div class="score-box o-box">
+          <span class="score-num" id="score-o">0</span>
+          <span class="score-lbl" id="label-o">AI (O)</span>
+        </div>
+      </div>
+      <div class="turn-bar" id="turn-bar"><span class="neon-cyan">X GOES FIRST</span></div>
+      <div class="ttt-board" id="ttt-board"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+        <button class="pixel-btn btn-magenta" onclick="resetRound()"><span class="btn-span">↺ NEW ROUND</span></button>
+        <button class="pixel-btn btn-cyan" onclick="backToMenu()"><span class="btn-span">≡ MENU</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+
+<script>
+let board=Array(9).fill(null), xTurn=true, gameActive=false;
+let scores={x:0,o:0,d:0}, mode='ai', aiTurn=false;
+const WIN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function startGame(){
+  mode=document.querySelector('.mode-btn.active').dataset.mode;
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  document.getElementById('label-o').textContent=mode==='ai'?'AI (O)':'PLAYER O';
+  scores={x:0,o:0,d:0};
+  updateScores();
+  resetRound();
+}
+
+function backToMenu(){
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('hidden');
+}
+
+function resetRound(){
+  board=Array(9).fill(null);
+  xTurn=true; gameActive=true; aiTurn=false;
+  renderBoard();
+  setTurnBar();
+}
+
+function renderBoard(){
+  const el=document.getElementById('ttt-board');
+  el.innerHTML='';
+  board.forEach((v,i)=>{
+    const cell=document.createElement('div');
+    cell.className='ttt-cell'+(v?' taken':'');
+    if(v==='X') cell.classList.add('x-cell');
+    if(v==='O') cell.classList.add('o-cell');
+    cell.textContent=v||'';
+    if(v) cell.classList.add('pop');
+    cell.addEventListener('click',()=>handleClick(i));
+    el.appendChild(cell);
+  });
+}
+
+function handleClick(i){
+  if(!gameActive||board[i]||aiTurn) return;
+  board[i]=xTurn?'X':'O';
+  PH.playMove&&PH.playMove();
+  const cells=document.querySelectorAll('.ttt-cell');
+  if(cells[i]){ cells[i].textContent=board[i]; cells[i].classList.add(xTurn?'x-cell':'o-cell','taken','pop'); }
+  
+  const w=checkWinner();
+  if(w){ endGame(w); return; }
+  if(board.every(c=>c)){ endGame(null); return; }
+  
+  xTurn=!xTurn;
+  setTurnBar();
+  
+  if(mode==='ai'&&!xTurn&&gameActive){
+    aiTurn=true;
+    setTimeout(()=>{ aiMove(); aiTurn=false; }, 400);
+  }
+}
+
+function aiMove(){
+  if(!gameActive) return;
+  // Minimax AI
+  let best=-Infinity, move=0;
+  board.forEach((v,i)=>{
+    if(!v){
+      board[i]='O';
+      const score=minimax(board,0,false);
+      board[i]=null;
+      if(score>best){ best=score; move=i; }
+    }
+  });
+  board[move]='O';
+  xTurn=true;
+  PH.playBeep&&PH.playBeep(440,0.08,'square',0.08);
+  
+  const cells=document.querySelectorAll('.ttt-cell');
+  if(cells[move]){ cells[move].textContent='O'; cells[move].classList.add('o-cell','taken','pop'); }
+  
+  const w=checkWinner();
+  if(w){ endGame(w); return; }
+  if(board.every(c=>c)){ endGame(null); return; }
+  setTurnBar();
+}
+
+function minimax(b,depth,isMax){
+  const w=checkWinnerOnBoard(b);
+  if(w==='O') return 10-depth;
+  if(w==='X') return depth-10;
+  if(b.every(c=>c)) return 0;
+  if(isMax){
+    let best=-Infinity;
+    b.forEach((v,i)=>{ if(!v){ b[i]='O'; best=Math.max(best,minimax(b,depth+1,false)); b[i]=null; } });
+    return best;
+  } else {
+    let best=Infinity;
+    b.forEach((v,i)=>{ if(!v){ b[i]='X'; best=Math.min(best,minimax(b,depth+1,true)); b[i]=null; } });
+    return best;
+  }
+}
+
+function checkWinnerOnBoard(b){
+  for(const [a,c,d] of WIN){ if(b[a]&&b[a]===b[c]&&b[a]===b[d]) return b[a]; }
+  return null;
+}
+
+function checkWinner(){
+  for(const combo of WIN){
+    const [a,c,d]=combo;
+    if(board[a]&&board[a]===board[c]&&board[a]===board[d]){
+      // Highlight winners
+      const cells=document.querySelectorAll('.ttt-cell');
+      [a,c,d].forEach(i=>cells[i].classList.add('winner'));
+      return board[a];
+    }
+  }
+  return null;
+}
+
+function endGame(winner){
+  gameActive=false;
+  if(winner==='X'){ scores.x++; PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('tic-tac-toe', scores.x); }
+  else if(winner==='O'){ scores.o++; if(mode==='ai') PH.playLose&&PH.playLose(); else { PH.playWin&&PH.playWin(); } }
+  else { scores.d++; PH.playBeep&&PH.playBeep(440,0.3,'sine',0.1); }
+  updateScores();
+  
+  const tb=document.getElementById('turn-bar');
+  if(winner){ tb.innerHTML=`<span style="color:#ffff00;text-shadow:0 0 10px #ffff00">${winner} WINS! 🏆</span>`; }
+  else { tb.innerHTML=`<span style="color:#888">DRAW! 🤝</span>`; }
+  setTimeout(resetRound,2000);
+}
+
+function updateScores(){
+  document.getElementById('score-x').textContent=scores.x;
+  document.getElementById('score-o').textContent=scores.o;
+  document.getElementById('score-draw').textContent=scores.d;
+}
+
+function setTurnBar(){
+  const tb=document.getElementById('turn-bar');
+  const who=xTurn?'X':'O';
+  const color=xTurn?'#00ffff':'#ff00ff';
+  const label=mode==='ai'&&!xTurn?'AI':'PLAYER '+who;
+  tb.innerHTML=`<span style="color:${color};text-shadow:0 0 10px ${color}">${label}'S TURN</span>`;
+}
+
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    PH.playClick&&PH.playClick();
+  });
+});
+</script>
+</body>
+</html>

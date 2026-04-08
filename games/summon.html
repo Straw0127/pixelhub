@@ -1,0 +1,239 @@
+<!-- NEW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Summon - PixelHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .summon-wrap{max-width:700px;margin:0 auto;padding:20px;text-align:center;}
+    .summon-orb{width:180px;height:180px;border-radius:50%;margin:20px auto;cursor:pointer;position:relative;transition:all 0.3s;display:flex;align-items:center;justify-content:center;font-size:60px;border:4px solid #00ffff;box-shadow:0 0 30px rgba(0,255,255,0.5),inset 0 0 30px rgba(0,255,255,0.1);animation:orbPulse 2s ease-in-out infinite;}
+    @keyframes orbPulse{0%,100%{box-shadow:0 0 30px rgba(0,255,255,0.5),inset 0 0 30px rgba(0,255,255,0.1);}50%{box-shadow:0 0 60px rgba(0,255,255,0.8),inset 0 0 50px rgba(0,255,255,0.2);}}
+    .summon-orb:hover{transform:scale(1.08);}
+    .summon-orb.spinning{animation:orbSpin 0.5s linear infinite;}
+    @keyframes orbSpin{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(360deg);}}
+    .summon-result{min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;margin:20px 0;}
+    .result-card{border:3px solid;padding:24px 32px;background:rgba(0,0,20,0.9);text-align:center;transform:scale(0);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);min-width:260px;}
+    .result-card.show{transform:scale(1);}
+    .result-emoji{font-size:64px;margin-bottom:8px;display:block;}
+    .result-rarity{font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:3px;margin-bottom:8px;}
+    .result-name{font-family:'Press Start 2P',monospace;font-size:14px;margin-bottom:8px;}
+    .result-reward{font-family:'Share Tech Mono',monospace;font-size:12px;color:#aac;}
+    .rarity-common{border-color:#aac;color:#aac;}
+    .rarity-rare{border-color:#0088ff;color:#0088ff;box-shadow:0 0 15px rgba(0,136,255,0.4);}
+    .rarity-epic{border-color:#cc00ff;color:#cc00ff;box-shadow:0 0 20px rgba(204,0,255,0.5);}
+    .rarity-legendary{border-color:#ffd700;color:#ffd700;box-shadow:0 0 30px rgba(255,215,0,0.6);}
+    .rarity-mythic{border-color:#ff00ff;color:#ff00ff;box-shadow:0 0 40px rgba(255,0,255,0.8);animation:mythicGlow 1s ease-in-out infinite alternate;}
+    @keyframes mythicGlow{from{box-shadow:0 0 40px rgba(255,0,255,0.8);}to{box-shadow:0 0 80px rgba(255,0,255,1),0 0 120px rgba(0,255,255,0.5);}}
+    .crystals-row{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
+    .crystal{font-size:20px;cursor:not-allowed;filter:grayscale(1);transition:all 0.2s;}
+    .crystal.lit{filter:none;animation:crystalGlow 1s ease-in-out infinite alternate;}
+    @keyframes crystalGlow{from{filter:drop-shadow(0 0 4px #00ffff);}to{filter:drop-shadow(0 0 12px #00ffff);}}
+    .summon-btn{font-family:'Press Start 2P',monospace;font-size:11px;padding:14px 32px;border:3px solid #ff00ff;color:#ff00ff;background:transparent;cursor:pointer;letter-spacing:2px;transition:all 0.2s;margin:10px;}
+    .summon-btn:hover:not(:disabled){background:rgba(255,0,255,0.1);box-shadow:0 0 25px rgba(255,0,255,0.5);}
+    .summon-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .summon-btn.ten{border-color:#ffff00;color:#ffff00;}
+    .summon-btn.ten:hover:not(:disabled){background:rgba(255,255,0,0.1);box-shadow:0 0 25px rgba(255,255,0,0.5);}
+    .pity-bar{height:6px;background:rgba(255,255,255,0.1);margin:8px auto;max-width:300px;border:1px solid #333;}
+    #pity-fill{height:100%;background:linear-gradient(90deg,#cc00ff,#ff00ff);transition:width 0.5s;}
+    .collection{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;max-height:140px;overflow-y:auto;}
+    .coll-item{font-size:24px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid #333;transition:all 0.2s;}
+    .coll-item:hover{border-color:#00ffff;transform:scale(1.1);}
+    .stat-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+    .s-stat{font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;}
+    .s-stat span{color:#00ffff;text-shadow:0 0 8px #00ffff;}
+  </style>
+</head>
+<body data-game="summon">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">✨ SUMMON</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
+
+  <div id="screen-game" class="game-screen">
+    <div class="summon-wrap">
+      <div class="stat-row">
+        <div class="s-stat">💎 CRYSTALS: <span id="crystal-count">100</span></div>
+        <div class="s-stat">🎲 SUMMONS: <span id="summon-count">0</span></div>
+        <div class="s-stat">⭐ LEGENDARIES: <span id="leg-count">0</span></div>
+      </div>
+      <div class="crystals-row" id="crystals-row"></div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#cc00ff;margin-bottom:4px;">PITY METER (LEGENDARY)</div>
+      <div class="pity-bar"><div id="pity-fill" style="width:0%"></div></div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;margin-bottom:12px;" id="pity-text">0/100</div>
+
+      <div class="summon-orb" id="summon-orb" onclick="doSummon(1)">✨</div>
+
+      <div>
+        <button class="summon-btn" onclick="doSummon(1)" id="btn-1">✨ SUMMON (10)</button>
+        <button class="summon-btn ten" onclick="doSummon(10)" id="btn-10">💫 SUMMON x10 (90)</button>
+      </div>
+      <button style="font-family:'Press Start 2P',monospace;font-size:7px;padding:6px 12px;border:1px solid #555;color:#555;background:transparent;cursor:pointer;margin:4px;" onclick="getFreeCrystals()">🎁 DAILY CRYSTALS (+20)</button>
+
+      <div class="summon-result" id="summon-result"></div>
+
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#aac;margin-bottom:8px;letter-spacing:2px;">COLLECTION (<span id="coll-count">0</span>/50)</div>
+      <div class="collection" id="collection"></div>
+    </div>
+  </div>
+</div>
+
+<audio id="bg-music" loop><source src="../assets/music/arcade.mp3" type="audio/mpeg"></audio>
+<audio id="sfx-click" src="../assets/sounds/click.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="../assets/sounds/win.mp3" preload="auto"></audio>
+<audio id="sfx-lose" src="../assets/sounds/lose.mp3" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function(){
+  'use strict';
+  const POOL=[
+    {emoji:'🗡️',name:'IRON SWORD',rarity:'common',weight:40},
+    {emoji:'🛡️',name:'WOOD SHIELD',rarity:'common',weight:38},
+    {emoji:'👞',name:'LEATHER BOOTS',rarity:'common',weight:37},
+    {emoji:'🏹',name:'OAK BOW',rarity:'common',weight:36},
+    {emoji:'🔮',name:'GLASS ORBS',rarity:'rare',weight:12},
+    {emoji:'⚡',name:'THUNDER STAFF',rarity:'rare',weight:11},
+    {emoji:'🌊',name:'TIDAL BLADE',rarity:'rare',weight:10},
+    {emoji:'🦅',name:'STORM WING',rarity:'epic',weight:4},
+    {emoji:'🐉',name:'DRAGON SCALE',rarity:'epic',weight:3.5},
+    {emoji:'💀',name:'SOUL SHARD',rarity:'epic',weight:3},
+    {emoji:'⭐',name:'STAR BLADE',rarity:'legendary',weight:1.2},
+    {emoji:'🌙',name:'MOON RELIC',rarity:'legendary',weight:1},
+    {emoji:'💎',name:'VOID CRYSTAL',rarity:'legendary',weight:0.8},
+    {emoji:'🔱',name:'TRIDENT OF GODS',rarity:'mythic',weight:0.3},
+    {emoji:'🌟',name:'ETERNAL STAR',rarity:'mythic',weight:0.2},
+  ];
+
+  const COST_1=10, COST_10=90;
+  const PITY_THRESHOLD=100;
+
+  let state={crystals:100,summons:0,pity:0,legendaries:0,collection:[],lastDaily:0};
+
+  function loadState(){
+    const s=localStorage.getItem('summon_state');
+    if(s) state=JSON.parse(s);
+    renderAll();
+  }
+  function saveState(){
+    localStorage.setItem('summon_state',JSON.stringify(state));
+    if(typeof PH!=='undefined'&&state.summons>0) PH.saveScore('summon',state.summons);
+  }
+
+  function getItem(){
+    // pity override at 100
+    if(state.pity>=PITY_THRESHOLD){
+      state.pity=0;
+      const legs=POOL.filter(p=>p.rarity==='legendary'||p.rarity==='mythic');
+      return legs[Math.floor(Math.random()*legs.length)];
+    }
+    const total=POOL.reduce((s,p)=>s+p.weight,0);
+    let r=Math.random()*total;
+    for(const p of POOL){ r-=p.weight; if(r<=0) return p; }
+    return POOL[0];
+  }
+
+  window.doSummon=function(n){
+    const cost=n===1?COST_1:COST_10;
+    if(state.crystals<cost){ showToast('NOT ENOUGH CRYSTALS!'); return; }
+    state.crystals-=cost;
+    const orb=document.getElementById('summon-orb');
+    orb.classList.add('spinning');
+    setTimeout(()=>{
+      orb.classList.remove('spinning');
+      const items=[];
+      for(let i=0;i<n;i++){
+        state.pity++;
+        state.summons++;
+        const item=getItem();
+        items.push(item);
+        if(item.rarity==='legendary'||item.rarity==='mythic'){ state.legendaries++; state.pity=0; }
+        if(!state.collection.includes(item.name)) state.collection.push(item.name);
+      }
+      // show last or best rarity
+      const priority=['mythic','legendary','epic','rare','common'];
+      items.sort((a,b)=>priority.indexOf(a.rarity)-priority.indexOf(b.rarity));
+      showResults(n===1?[items[0]]:items);
+      saveState(); renderAll();
+    },600);
+  };
+
+  window.getFreeCrystals=function(){
+    const now=Date.now();
+    if(now-state.lastDaily<86400000){
+      const h=Math.ceil((86400000-(now-state.lastDaily))/3600000);
+      showToast('COME BACK IN '+h+'H!'); return;
+    }
+    state.crystals+=20; state.lastDaily=now;
+    saveState(); renderAll();
+    showToast('+20 CRYSTALS!');
+  };
+
+  function showResults(items){
+    const res=document.getElementById('summon-result'); res.innerHTML='';
+    // show cards
+    items.slice(0,5).forEach((item,i)=>{
+      const card=document.createElement('div');
+      card.className=`result-card rarity-${item.rarity}`;
+      card.innerHTML=`<span class="result-emoji">${item.emoji}</span><div class="result-rarity">${item.rarity.toUpperCase()}</div><div class="result-name">${item.name}</div>`;
+      res.appendChild(card);
+      setTimeout(()=>card.classList.add('show'),i*80);
+      if(item.rarity==='legendary'||item.rarity==='mythic'){ if(typeof PH!=='undefined'&&PH.playWin) PH.playWin(); if(typeof PH!=='undefined'&&PH.confetti) setTimeout(()=>PH.confetti(),200); }
+    });
+    if(items.length>5){
+      const more=document.createElement('div');
+      more.style.cssText='font-family:"Press Start 2P",monospace;font-size:8px;color:#aac;margin-top:8px;';
+      more.textContent=`...AND ${items.length-5} MORE`;
+      res.appendChild(more);
+    }
+  }
+
+  function showToast(msg){
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);font-family:"Press Start 2P",monospace;font-size:9px;color:#ff00ff;background:rgba(0,0,20,0.95);border:2px solid #ff00ff;padding:10px 20px;z-index:9999;';
+    t.textContent=msg; document.body.appendChild(t);
+    setTimeout(()=>t.remove(),2000);
+  }
+
+  function renderAll(){
+    document.getElementById('crystal-count').textContent=state.crystals;
+    document.getElementById('summon-count').textContent=state.summons;
+    document.getElementById('leg-count').textContent=state.legendaries;
+    const pct=Math.min(state.pity/PITY_THRESHOLD*100,100);
+    document.getElementById('pity-fill').style.width=pct+'%';
+    document.getElementById('pity-text').textContent=state.pity+'/'+PITY_THRESHOLD;
+    document.getElementById('btn-1').disabled=state.crystals<COST_1;
+    document.getElementById('btn-10').disabled=state.crystals<COST_10;
+    // crystals display
+    const cr=document.getElementById('crystals-row'); cr.innerHTML='';
+    for(let i=0;i<10;i++){
+      const c=document.createElement('div');
+      c.className='crystal'+(i<Math.floor(state.crystals/10)?' lit':'');
+      c.textContent='💎';
+      cr.appendChild(c);
+    }
+    // collection
+    const coll=document.getElementById('collection'); coll.innerHTML='';
+    document.getElementById('coll-count').textContent=state.collection.length;
+    state.collection.forEach(name=>{
+      const p=POOL.find(x=>x.name===name);
+      if(!p) return;
+      const d=document.createElement('div'); d.className='coll-item';
+      d.textContent=p.emoji; d.title=p.name+' ('+p.rarity+')';
+      d.style.borderColor={common:'#555',rare:'#0088ff',epic:'#cc00ff',legendary:'#ffd700',mythic:'#ff00ff'}[p.rarity];
+      coll.appendChild(d);
+    });
+  }
+
+  loadState();
+  if(typeof PH!=='undefined') PH.initGamePage();
+})();
+</script>
+</body>
+</html>
