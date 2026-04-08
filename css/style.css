@@ -363,6 +363,11 @@ body {
   padding: 20px 40px 60px;
   max-width: 1400px;
   margin: 0 auto;
+  justify-items: center;
+}
+
+.games-grid .game-card {
+  width: 100%;
 }
 
 /* === GAME CARD === */
@@ -665,11 +670,12 @@ body {
   text-align: center;
   padding: 40px;
   max-width: 500px;
-  width: 100%;
+  width: calc(100% - 40px);
   border: 2px solid var(--neon-cyan);
   background: rgba(0,0,20,0.9);
   box-shadow: var(--glow-md) var(--neon-cyan), inset 0 0 40px rgba(0,255,255,0.05);
-  position: absolute;
+  position: relative;
+  margin: 40px auto;
   z-index: 10;
 }
 
