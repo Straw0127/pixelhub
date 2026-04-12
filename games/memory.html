@@ -8,30 +8,34 @@
   <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
-    .mem-wrap { display:flex; flex-direction:column; align-items:center; padding:16px; gap:12px; }
-    .mem-grid { display:grid; gap:8px; }
-    .mem-grid.grid-4 { grid-template-columns:repeat(4,1fr); }
-    .mem-grid.grid-5 { grid-template-columns:repeat(5,1fr); }
-    .mem-grid.grid-6 { grid-template-columns:repeat(6,1fr); }
-    .mem-card { width:min(80px,16vw); height:min(80px,16vw); perspective:600px; cursor:pointer; }
-    .mem-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .mem-wrap { display:flex; flex-direction:column; align-items:center; padding:12px; gap:10px; }
+    .mem-grid { display:grid; gap:6px; justify-content:center; }
+    .mem-grid.grid-4  { grid-template-columns:repeat(4,1fr); }
+    .mem-grid.grid-5  { grid-template-columns:repeat(5,1fr); }
+    .mem-grid.grid-6  { grid-template-columns:repeat(6,1fr); }
+    .mem-grid.grid-7  { grid-template-columns:repeat(7,1fr); }
+    .mem-card { width:min(72px,13vw); height:min(72px,13vw); perspective:600px; cursor:pointer; }
+    .mem-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.45s cubic-bezier(0.4,0,0.2,1); }
     .mem-card.flipped .mem-card-inner { transform:rotateY(180deg); }
     .mem-card.matched .mem-card-inner { transform:rotateY(180deg); }
-    .mem-card.matched .card-front { background:rgba(165,214,167,0.25); border-color:#a5d6a7; box-shadow:0 0 15px rgba(165,214,167,0.4); }
-    .card-front,.card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; border:2px solid; }
-    .card-back { background:rgba(21,101,192,0.55); border-color:rgba(255,255,255,0.45); font-size:min(28px,5vw); backdrop-filter:blur(4px); }
-    .card-back::after { content:'?'; font-family:'Fredoka One',cursive; font-size:min(16px,3vw); color:rgba(255,255,255,0.5); }
-    .card-front { background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.55); transform:rotateY(180deg); font-size:min(36px,7vw); backdrop-filter:blur(4px); }
-    .mem-card:not(.matched):not(.flipped):hover .card-back { border-color:#81d4fa; box-shadow:0 4px 14px rgba(129,212,250,0.25); }
-    .mem-stats { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+    .mem-card.matched .card-front { background:rgba(165,214,167,0.25); border-color:#a5d6a7; box-shadow:0 0 12px rgba(165,214,167,0.35); }
+    .card-front,.card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; border:2px solid; border-radius:8px; }
+    .card-back { background:rgba(21,101,192,0.55); border-color:rgba(255,255,255,0.45); backdrop-filter:blur(4px); }
+    .card-back::after { content:'?'; font-family:'Fredoka One',cursive; font-size:min(18px,3vw); color:rgba(255,255,255,0.6); }
+    .card-front { background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.55); transform:rotateY(180deg); font-size:min(32px,6vw); backdrop-filter:blur(4px); }
+    .mem-card:not(.matched):not(.flipped):hover .card-back { border-color:#81d4fa; box-shadow:0 4px 12px rgba(129,212,250,0.25); }
+    .mem-stats { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
     .mem-stat { text-align:center; font-family:'Fredoka One',cursive; font-size:9px; }
     .mem-stat-num { font-size:20px; display:block; color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.35); }
     .mem-stat span { color:rgba(255,255,255,0.6); display:block; margin-top:4px; }
-    .diff-sel { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-    .diff-card { font-family:'Fredoka One',cursive; font-size:8px; padding:10px 16px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .diff-sel { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .diff-card { font-family:'Fredoka One',cursive; font-size:8px; padding:10px 14px; border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.06); cursor:pointer; transition:all 0.2s; border-radius:20px; }
     .diff-card.active { border-color:#81d4fa; color:#81d4fa; background:rgba(129,212,250,0.1); box-shadow:0 2px 10px rgba(129,212,250,0.2); }
-    #timer-display { font-family:'Fredoka One',cursive; font-size:18px; }
-    .timer-warn { color:#ff6600 !important; text-shadow:0 0 10px #ff6600 !important; animation:blink 0.5s step-end infinite; }
+    #timer-display { font-family:'Fredoka One',cursive; font-size:20px; }
+    .timer-warn { color:#ff6600 !important; animation:blink 0.5s step-end infinite; }
+    @keyframes blink{50%{opacity:0.3}}
+    .progress-track { width:min(400px,90vw); height:5px; background:rgba(255,255,255,0.12); border-radius:3px; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#1e88e5,#81d4fa); border-radius:3px; transition:width 1s linear; }
   </style>
 </head>
 <body data-game="memory">
@@ -43,15 +47,15 @@
     <span class="score-display">BEST: <span id="nav-best">0</span></span>
   </nav>
 
-  <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:460px;margin:30px auto;">
     <h1>🃏 MEMORY CARDS</h1>
     <p>Flip cards to find matching pairs. Remember positions and match them all!</p>
     <div style="margin:20px 0;">
       <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">SELECT DIFFICULTY:</div>
       <div class="diff-sel">
-        <button class="diff-card active" data-pairs="8" data-time="60">EASY<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">8 PAIRS 60s</span></button>
-        <button class="diff-card" data-pairs="10" data-time="45">MEDIUM<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">10 PAIRS 45s</span></button>
-        <button class="diff-card" data-pairs="12" data-time="30">HARD<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">12 PAIRS 30s</span></button>
+        <button class="diff-card active" data-pairs="10" data-time="120">EASY<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">10 PAIRS · 2 MIN</span></button>
+        <button class="diff-card" data-pairs="15" data-time="105">MEDIUM<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">15 PAIRS · 1:45</span></button>
+        <button class="diff-card" data-pairs="21" data-time="120">HARD<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">21 PAIRS · 2 MIN</span></button>
       </div>
     </div>
     <button class="pixel-btn btn-cyan mt-16" onclick="startMemory()"><span class="btn-span">▶ START GAME</span></button>
@@ -63,8 +67,10 @@
       <div class="mem-stats">
         <div class="mem-stat"><span class="mem-stat-num" id="moves-disp">0</span><span>MOVES</span></div>
         <div class="mem-stat"><span class="mem-stat-num neon-green" id="matches-disp">0</span><span>MATCHED</span></div>
-        <div class="mem-stat"><span class="mem-stat-num" id="timer-display" style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)">60</span><span>SECONDS</span></div>
+        <div class="mem-stat"><span class="mem-stat-num" id="timer-display" style="color:#ffd54f">120</span><span>SECONDS</span></div>
+        <div class="mem-stat"><span class="mem-stat-num" id="pairs-left-disp" style="color:#f8bbd0">0</span><span>REMAINING</span></div>
       </div>
+      <div class="progress-track"><div class="progress-fill" id="timer-bar" style="width:100%"></div></div>
       <div class="mem-grid" id="mem-grid"></div>
       <button class="pixel-btn btn-cyan" onclick="startMemory()"><span class="btn-span">↺ RESTART</span></button>
     </div>
@@ -84,48 +90,50 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/games.js"></script>
 <script src="../js/main.js"></script>
-
 <script>
-const EMOJIS=['🎮','🕹️','👾','🚀','⭐','🔥','💎','🌈','🎯','🏆','⚡','🎲','🌙','🎪','🦄','🎭','🍕','🎸','🦊','🐉','🌺','🎨'];
-let cards=[], flipped=[], matched=0, moves=0, totalPairs=8, timeLeft=60, timer=null, canFlip=true;
+// 30 distinct emojis for up to 21 pairs (hard mode)
+const EMOJIS=['🎮','🕹️','👾','🚀','⭐','🔥','💎','🌈','🎯','🏆',
+              '⚡','🎲','🌙','🎪','🦄','🎭','🍕','🎸','🦊','🐉',
+              '🌺','🎨','🦋','🍦','🎃','🎵','🌊','🦅','🎀','🍀'];
+let cards=[], flipped=[], matched=0, moves=0, totalPairs=10, timeLeft=120, maxTime=120, timer=null, canFlip=true;
 
 function startMemory(){
   document.getElementById('screen-start').classList.add('hidden');
   document.getElementById('screen-end').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
-  
+
   const active=document.querySelector('.diff-card.active');
   totalPairs=parseInt(active.dataset.pairs);
-  timeLeft=parseInt(active.dataset.time);
+  maxTime=parseInt(active.dataset.time);
+  timeLeft=maxTime;
   moves=0; matched=0; flipped=[]; canFlip=true;
-  
+
   document.getElementById('moves-disp').textContent=0;
   document.getElementById('matches-disp').textContent=0;
+  document.getElementById('pairs-left-disp').textContent=totalPairs;
   document.getElementById('timer-display').textContent=timeLeft;
   document.getElementById('timer-display').className='mem-stat-num';
-  
-  // Build cards
-  const chosen=PH.shuffle(EMOJIS).slice(0,totalPairs);
+  document.getElementById('timer-bar').style.width='100%';
+
+  const chosen=PH.shuffle([...EMOJIS]).slice(0,totalPairs);
   cards=PH.shuffle([...chosen,...chosen].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false})));
-  
-  // Grid columns
+
   const grid=document.getElementById('mem-grid');
-  const cols=totalPairs<=8?4:totalPairs<=10?5:6;
+  // Grid columns: easy=5, medium=6, hard=7
+  const cols=totalPairs<=10?5:totalPairs<=15?6:7;
   grid.className='mem-grid grid-'+cols;
   renderCards();
-  
+
   clearInterval(timer);
   timer=setInterval(()=>{
     timeLeft--;
     const td=document.getElementById('timer-display');
     td.textContent=timeLeft;
-    if(timeLeft<=10) td.classList.add('timer-warn');
-    if(timeLeft<=0){
-      clearInterval(timer);
-      endGame(false);
-    }
+    document.getElementById('timer-bar').style.width=Math.max(0,(timeLeft/maxTime)*100)+'%';
+    if(timeLeft<=20) td.classList.add('timer-warn');
+    if(timeLeft<=0){ clearInterval(timer); endGame(false); }
   },1000);
-  
+
   PH.playClick&&PH.playClick();
 }
 
@@ -146,10 +154,8 @@ function flipCard(i){
   cards[i].flipped=true;
   flipped.push(i);
   PH.playBeep&&PH.playBeep(660,0.08,'sine',0.1);
-  
   const els=document.querySelectorAll('.mem-card');
   els[i].classList.add('flipped');
-  
   if(flipped.length===2){
     moves++;
     document.getElementById('moves-disp').textContent=moves;
@@ -164,7 +170,8 @@ function checkMatch(){
     cards[a].matched=cards[b].matched=true;
     matched++;
     document.getElementById('matches-disp').textContent=matched;
-    PH.playMatch&&PH.playMatch();
+    document.getElementById('pairs-left-disp').textContent=totalPairs-matched;
+    PH.playBeep&&PH.playBeep(880,0.1,'sine',0.12);
     const els=document.querySelectorAll('.mem-card');
     els[a].classList.add('matched');
     els[b].classList.add('matched');
@@ -176,16 +183,18 @@ function checkMatch(){
       cards[a].flipped=cards[b].flipped=false;
       els[a].classList.remove('flipped');
       els[b].classList.remove('flipped');
-      PH.playBeep&&PH.playBeep(220,0.15,'sawtooth',0.08);
+      PH.playBeep&&PH.playBeep(220,0.12,'sawtooth',0.08);
       flipped=[]; canFlip=true;
-    },800);
+    },900);
   }
 }
 
 function endGame(win){
+  clearInterval(timer);
   document.getElementById('screen-game').classList.add('hidden');
   document.getElementById('screen-end').classList.remove('hidden');
-  const score=win?Math.max(0,(totalPairs*100)-(moves*5)+(timeLeft*10)):0;
+  // Score: pairs * 50 - moves penalty + time bonus
+  const score=win?Math.max(0,(totalPairs*50)-(moves*3)+(timeLeft*5)):Math.floor(matched*20);
   if(win){
     document.getElementById('end-title').textContent='🎉 YOU WIN!';
     PH.playWin&&PH.playWin();
@@ -195,13 +204,12 @@ function endGame(win){
     PH.playLose&&PH.playLose();
   }
   document.getElementById('end-score').textContent=score+' PTS';
-  document.getElementById('end-msg').textContent=win?`Matched all ${totalPairs} pairs in ${moves} moves!`:`Matched ${matched}/${totalPairs} pairs.`;
+  const msg=win?`Matched all ${totalPairs} pairs in ${moves} moves! Time left: ${timeLeft}s`:`Matched ${matched}/${totalPairs} pairs.`;
   const isNew=PH.setHighScore('memory',score);
-  if(isNew) document.getElementById('end-msg').textContent+=' 🏆 NEW HIGH SCORE!';
+  document.getElementById('end-msg').textContent=msg+(isNew?' 🏆 NEW HIGH SCORE!':'');
   document.getElementById('nav-best').textContent=PH.getHighScore('memory');
 }
 
-// Best score display
 document.getElementById('best-display').textContent=PH.getHighScore('memory');
 document.getElementById('nav-best').textContent=PH.getHighScore('memory');
 

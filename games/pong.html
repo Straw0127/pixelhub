@@ -9,18 +9,19 @@
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .pong-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px; }
-    #pong-canvas { image-rendering:pixelated; }
+    #pong-canvas { image-rendering:pixelated; border-radius:8px; border:2px solid rgba(255,255,255,0.25); }
     .pong-controls-mobile { display:flex; gap:20px; margin-top:10px; }
-    .pong-btn { width:80px; height:60px; background:rgba(255,255,0,0.1); border:2px solid rgba(255,255,0,0.4); color:#ffd54f; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; border-radius:0; -webkit-user-select:none; }
-    .pong-btn:active { background:rgba(255,255,0,0.3); }
+    .pong-btn { width:80px; height:60px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.3); color:#ffd54f; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; border-radius:10px; -webkit-user-select:none; }
+    .pong-btn:active { background:rgba(255,255,255,0.25); }
     @media(min-width:600px){ .pong-controls-mobile{display:none;} }
     .pong-scores { display:flex; gap:40px; align-items:center; }
     .pong-score-num { font-family:'Fredoka One',cursive; font-size:32px; }
     .p1-score { color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.4); }
-    .p2-score { color:#f8bbd0; text-shadow:0 0 15px #ff00ff; }
+    .p2-score { color:#f8bbd0; text-shadow:0 2px 8px rgba(248,187,208,0.3); }
     .pong-vs { font-family:'Fredoka One',cursive; font-size:12px; color:rgba(255,255,255,0.35); }
+    .speed-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
     .speed-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.08); cursor:pointer; transition:all 0.2s; border-radius:20px; }
-    .speed-btn.active { border-color:#ffd54f; color:#ffd54f; background:rgba(255,213,79,0.1); box-shadow:0 2px 10px rgba(255,213,79,0.2); }
+    .speed-btn.active { border-color:#ffd54f; color:#ffd54f; background:rgba(255,213,79,0.1); }
   </style>
 </head>
 <body data-game="pong">
@@ -34,13 +35,13 @@
 
   <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
     <h1>🏓 PONG</h1>
-    <p>Classic arcade paddle game! First to <strong style="color:#ffd54f">7 points</strong> wins.<br>Use W/S or ↑/↓ keys. Touch/drag on mobile.</p>
+    <p>Classic arcade paddle game! First to <strong style="color:#ffd54f">7 points</strong> wins.<br>Use W/S or ↑/↓ keys. Touch on mobile.</p>
     <div style="margin:20px 0;">
-      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">AI SPEED:</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">AI DIFFICULTY:</div>
       <div class="speed-btns">
-        <button class="speed-btn active" data-speed="0.04">EASY</button>
-        <button class="speed-btn" data-speed="0.07">MEDIUM</button>
-        <button class="speed-btn" data-speed="0.1">HARD</button>
+        <button class="speed-btn active" data-diff="easy">😊 EASY</button>
+        <button class="speed-btn" data-diff="medium">🤔 MEDIUM</button>
+        <button class="speed-btn" data-diff="hard">😈 HARD</button>
       </div>
     </div>
     <button class="pixel-btn btn-yellow" onclick="startPong()"><span class="btn-span">▶ START GAME</span></button>
@@ -53,18 +54,16 @@
         <span class="pong-vs">VS</span>
         <span class="pong-score-num p2-score" id="p2-score">0</span>
       </div>
-      <div style="display:flex;gap:40px;font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.6);">
+      <div style="display:flex;gap:40px;font-family:'Fredoka One',cursive;font-size:8px;">
         <span style="color:#81d4fa">YOU</span>
         <span style="color:#f8bbd0">AI</span>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="pong-canvas"></canvas>
-      </div>
+      <canvas id="pong-canvas"></canvas>
       <div class="pong-controls-mobile">
         <button class="pong-btn" id="btn-up">▲</button>
         <button class="pong-btn" id="btn-down">▼</button>
       </div>
-      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px;" id="pong-hint">W/S OR ↑/↓ TO MOVE</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px;">W/S OR ↑/↓ TO MOVE</div>
     </div>
   </div>
 
@@ -82,30 +81,37 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/games.js"></script>
 <script src="../js/main.js"></script>
-
 <script>
 const CW=Math.min(500,window.innerWidth-40), CH=Math.round(CW*0.6);
 const PAD_W=12, PAD_H=80, BALL_S=10, WIN_SCORE=7;
+
+// AI configs: maxSpeed (fraction of CH per frame), reactionZone (0-1 of court width AI reacts),
+// errorMargin (random vertical error pixels), updateInterval (frames between AI decisions)
+const AI_CONFIG = {
+  easy:   { maxSpeed:0.008, reactionZone:0.45, errorMargin:50, updateInterval:6  },
+  medium: { maxSpeed:0.012, reactionZone:0.60, errorMargin:28, updateInterval:4  },
+  hard:   { maxSpeed:0.018, reactionZone:0.80, errorMargin:12, updateInterval:2  }
+};
+
 let canvas, ctx, gloop;
-let p1y, p2y, bx, by, bdx, bdy, p1s, p2s, keys={}, aiSpeed=0.04;
-let particles=[];
+let p1y, p2y, bx, by, bdx, bdy, p1s, p2s, keys={};
+let particles=[], diff='easy', aiTarget=0, aiFrame=0, aiError=0;
 
 function startPong(){
+  diff=document.querySelector('.speed-btn.active').dataset.diff;
   document.getElementById('screen-start').classList.add('hidden');
   document.getElementById('screen-end').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
-  
-  aiSpeed=parseFloat(document.querySelector('.speed-btn.active').dataset.speed);
+
   canvas=document.getElementById('pong-canvas');
   canvas.width=CW; canvas.height=CH;
   ctx=canvas.getContext('2d');
-  
+
   p1y=CH/2-PAD_H/2; p2y=CH/2-PAD_H/2;
-  p1s=0; p2s=0;
+  p1s=0; p2s=0; aiTarget=CH/2; aiFrame=0; aiError=0;
   document.getElementById('p1-score').textContent=0;
   document.getElementById('p2-score').textContent=0;
   resetBall();
-  
   clearInterval(gloop);
   gloop=setInterval(update,16);
   PH.playClick&&PH.playClick();
@@ -113,97 +119,137 @@ function startPong(){
 
 function resetBall(){
   bx=CW/2; by=CH/2;
-  const angle=(Math.random()*60-30)*(Math.PI/180);
-  const speed=CW*0.008;
+  const angle=(Math.random()*50-25)*(Math.PI/180);
+  const speed=CW*0.0075;
   bdx=(Math.random()>0.5?1:-1)*speed*Math.cos(angle);
   bdy=speed*Math.sin(angle);
+  aiTarget=CH/2;
+  aiError=(Math.random()-0.5)*AI_CONFIG[diff].errorMargin*2;
 }
 
 function update(){
-  // Input
-  const spd=CH*0.015;
-  if(keys['w']||keys['arrowup']) p1y=Math.max(0,p1y-spd);
-  if(keys['s']||keys['arrowdown']) p1y=Math.min(CH-PAD_H,p1y+spd);
-  
-  // AI
-  const aiTarget=by-PAD_H/2;
-  const diff=aiTarget-p2y;
-  p2y+=Math.min(Math.abs(diff),Math.abs(bdx)*aiSpeed*CH)*Math.sign(diff);
+  const cfg=AI_CONFIG[diff];
+  // Player movement
+  const pSpd=CH*0.016;
+  if(keys['w']||keys['arrowup'])    p1y=Math.max(0,p1y-pSpd);
+  if(keys['s']||keys['arrowdown'])  p1y=Math.min(CH-PAD_H,p1y+pSpd);
+
+  // AI: only reacts when ball is in its reactionZone and moving toward it
+  aiFrame++;
+  if(aiFrame>=cfg.updateInterval){
+    aiFrame=0;
+    // Recalc error occasionally so AI doesn't lock perfectly
+    if(Math.random()<0.04) aiError=(Math.random()-0.5)*cfg.errorMargin*2;
+    if(bdx>0 && bx>(CW*(1-cfg.reactionZone))){
+      // Predict where ball will be when it reaches AI paddle (simple linear prediction)
+      const timeToReach=(CW-PAD_W-16-bx)/Math.max(bdx,0.1);
+      let predictedY=by+bdy*timeToReach;
+      // Bounce off walls
+      const fullH=CH-BALL_S;
+      predictedY=Math.abs(((predictedY%( fullH*2))+fullH*2)%(fullH*2)-fullH);
+      aiTarget=predictedY+aiError;
+    } else {
+      // Drift back toward center slowly when ball is not coming
+      aiTarget=CH/2+aiError*0.3;
+    }
+  }
+
+  // Move AI paddle toward target at limited speed
+  const aiCenter=p2y+PAD_H/2;
+  const dist=aiTarget-aiCenter;
+  const aiSpd=cfg.maxSpeed*CH;
+  p2y+=Math.min(Math.abs(dist),aiSpd)*Math.sign(dist);
   p2y=Math.max(0,Math.min(CH-PAD_H,p2y));
-  
-  // Ball
+
+  // Ball movement
   bx+=bdx; by+=bdy;
-  
-  // Walls
-  if(by<=BALL_S/2||by>=CH-BALL_S/2){ bdy=-bdy; PH.playBeep&&PH.playBeep(330,0.06,'square',0.08); }
-  
-  // Paddle collision P1
-  if(bx-BALL_S/2<=PAD_W+16&&by>=p1y&&by<=p1y+PAD_H&&bdx<0){
-    bdx=Math.abs(bdx)*1.05;
+
+  // Wall bounce
+  if(by<=BALL_S/2)       { by=BALL_S/2;       bdy=Math.abs(bdy);  PH.playBeep&&PH.playBeep(330,0.05,'square',0.07); }
+  if(by>=CH-BALL_S/2)    { by=CH-BALL_S/2;    bdy=-Math.abs(bdy); PH.playBeep&&PH.playBeep(330,0.05,'square',0.07); }
+
+  // Paddle P1
+  const p1left=16, p1right=16+PAD_W;
+  if(bx-BALL_S/2<=p1right&&bx-BALL_S/2>=p1left-2&&by>=p1y&&by<=p1y+PAD_H&&bdx<0){
+    bx=p1right+BALL_S/2;
+    bdx=Math.abs(bdx)*1.04;
     const rel=(by-(p1y+PAD_H/2))/(PAD_H/2);
-    bdy=rel*CW*0.01;
+    bdy=rel*CW*0.009;
     particles.push(...genParticles(bx,by,'#ffd54f'));
-    PH.playBeep&&PH.playBeep(660,0.08,'sine',0.12);
+    PH.playBeep&&PH.playBeep(660,0.08,'sine',0.1);
   }
-  // Paddle collision P2
-  if(bx+BALL_S/2>=CW-PAD_W-16&&by>=p2y&&by<=p2y+PAD_H&&bdx>0){
-    bdx=-Math.abs(bdx)*1.05;
+  // Paddle P2
+  const p2left=CW-PAD_W-16, p2right=CW-16;
+  if(bx+BALL_S/2>=p2left&&bx+BALL_S/2<=p2right+2&&by>=p2y&&by<=p2y+PAD_H&&bdx>0){
+    bx=p2left-BALL_S/2;
+    bdx=-Math.abs(bdx)*1.04;
     const rel=(by-(p2y+PAD_H/2))/(PAD_H/2);
-    bdy=rel*CW*0.01;
-    particles.push(...genParticles(bx,by,'#ff00ff'));
-    PH.playBeep&&PH.playBeep(440,0.08,'sine',0.12);
+    bdy=rel*CW*0.009;
+    particles.push(...genParticles(bx,by,'#f8bbd0'));
+    PH.playBeep&&PH.playBeep(440,0.08,'sine',0.1);
   }
-  
+
+  // Speed cap
+  const spd=Math.sqrt(bdx*bdx+bdy*bdy);
+  const maxSpd=CW*0.018;
+  if(spd>maxSpd){ bdx=bdx/spd*maxSpd; bdy=bdy/spd*maxSpd; }
+
   // Scoring
-  if(bx<0){ p2s++; document.getElementById('p2-score').textContent=p2s; PH.playBeep&&PH.playBeep(200,0.2,'sawtooth',0.12); resetBall(); }
-  if(bx>CW){ p1s++; document.getElementById('p1-score').textContent=p1s; PH.playBeep&&PH.playBeep(880,0.2,'sine',0.12); resetBall(); }
-  
-  if(p1s>=WIN_SCORE||p2s>=WIN_SCORE){ clearInterval(gloop); setTimeout(endPong,400); }
-  
-  // Particles
+  if(bx<0){
+    p2s++; document.getElementById('p2-score').textContent=p2s;
+    PH.playBeep&&PH.playBeep(200,0.2,'sawtooth',0.1);
+    if(p1s>=WIN_SCORE||p2s>=WIN_SCORE){ clearInterval(gloop); setTimeout(endPong,400); return; }
+    resetBall();
+  }
+  if(bx>CW){
+    p1s++; document.getElementById('p1-score').textContent=p1s;
+    PH.playBeep&&PH.playBeep(880,0.15,'sine',0.1);
+    if(p1s>=WIN_SCORE||p2s>=WIN_SCORE){ clearInterval(gloop); setTimeout(endPong,400); return; }
+    resetBall();
+  }
+
   particles=particles.filter(p=>p.life>0);
   particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; p.vx*=0.9; p.vy*=0.9; });
-  
   draw();
 }
 
 function genParticles(x,y,color){
   return Array.from({length:6},()=>{
     const a=Math.random()*Math.PI*2, s=1+Math.random()*3;
-    return {x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:15,color};
+    return {x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:14,color};
   });
 }
 
 function draw(){
-  ctx.fillStyle='rgba(25,100,180,0.55)'; ctx.fillRect(0,0,CW,CH);
-  
-  // Center line
-  ctx.setLineDash([10,10]);
-  ctx.strokeStyle='rgba(255,255,255,0.08)';
+  ctx.fillStyle='rgba(21,100,180,0.55)';
+  ctx.fillRect(0,0,CW,CH);
+
+  // Centre line
+  ctx.setLineDash([8,8]);
+  ctx.strokeStyle='rgba(255,255,255,0.1)';
   ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(CW/2,0); ctx.lineTo(CW/2,CH); ctx.stroke();
   ctx.setLineDash([]);
-  
+
   // P1 paddle
-  ctx.shadowColor='#ffd54f'; ctx.shadowBlur=15;
+  ctx.shadowColor='#ffd54f'; ctx.shadowBlur=12;
   ctx.fillStyle='#ffd54f';
-  ctx.fillRect(16,p1y,PAD_W,PAD_H);
-  
+  ctx.beginPath(); ctx.roundRect(16,p1y,PAD_W,PAD_H,4); ctx.fill();
+
   // P2 paddle
-  ctx.shadowColor='#ff00ff'; ctx.shadowBlur=15;
+  ctx.shadowColor='#f8bbd0'; ctx.shadowBlur=12;
   ctx.fillStyle='#f8bbd0';
-  ctx.fillRect(CW-PAD_W-16,p2y,PAD_W,PAD_H);
-  
+  ctx.beginPath(); ctx.roundRect(CW-PAD_W-16,p2y,PAD_W,PAD_H,4); ctx.fill();
+
   // Ball
-  const pulse=Math.sin(Date.now()/80)*3;
-  ctx.shadowColor='#ffff00'; ctx.shadowBlur=20+pulse;
-  ctx.fillStyle='rgba(255,255,255,0.25)';
-  ctx.fillRect(bx-BALL_S/2,by-BALL_S/2,BALL_S,BALL_S);
+  ctx.shadowColor='#ffffff'; ctx.shadowBlur=14;
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath(); ctx.arc(bx,by,BALL_S/2,0,Math.PI*2); ctx.fill();
   ctx.shadowBlur=0;
-  
+
   // Particles
   particles.forEach(p=>{
-    ctx.globalAlpha=p.life/15;
+    ctx.globalAlpha=p.life/14;
     ctx.fillStyle=p.color;
     ctx.fillRect(p.x-3,p.y-3,6,6);
   });
@@ -216,9 +262,9 @@ function endPong(){
   document.getElementById('screen-end').classList.remove('hidden');
   document.getElementById('end-title').textContent=win?'🏆 YOU WIN!':'💀 AI WINS!';
   document.getElementById('end-score').textContent=p1s+' - '+p2s;
-  document.getElementById('end-msg').textContent=win?'Excellent rally! You defeated the AI!':'Better luck next time!';
-  if(win){ PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('pong', p1s); }
-  else { PH.playLose&&PH.playLose(); }
+  document.getElementById('end-msg').textContent=win?'Great rallies! You defeated the AI!':'The AI edged it out — try again!';
+  if(win){ PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('pong',p1s); }
+  else PH.playLose&&PH.playLose();
 }
 
 document.addEventListener('keydown',e=>{
@@ -227,14 +273,17 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 
-// Mobile touch
 document.getElementById('btn-up')?.addEventListener('touchstart',()=>keys['arrowup']=true,{passive:true});
 document.getElementById('btn-up')?.addEventListener('touchend',()=>keys['arrowup']=false,{passive:true});
 document.getElementById('btn-down')?.addEventListener('touchstart',()=>keys['arrowdown']=true,{passive:true});
 document.getElementById('btn-down')?.addEventListener('touchend',()=>keys['arrowdown']=false,{passive:true});
 
 document.querySelectorAll('.speed-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{ document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); PH.playClick&&PH.playClick(); });
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    PH.playClick&&PH.playClick();
+  });
 });
 </script>
 </body>

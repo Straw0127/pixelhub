@@ -11,10 +11,10 @@
     .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(360px,80vw); height:min(360px,80vw); margin:20px auto; }
     .ttt-cell { background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:min(70px,14vw); cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; border-radius:10px; }
     .ttt-cell:hover:not(.taken) { background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.6); box-shadow:inset 0 0 14px rgba(255,255,255,0.1); }
-    .ttt-cell.x-cell { color:#81d4fa; text-shadow:0 0 12px rgba(129,212,250,0.55); border-color:#81d4fa; }
-    .ttt-cell.o-cell { color:#f8bbd0; text-shadow:0 0 12px rgba(248,187,208,0.5); border-color:rgba(248,187,208,0.7); }
-    .ttt-cell.winner { background:rgba(255,255,0,0.1) !important; border-color:#ffd54f !important; animation:winCellPulse 0.5s ease infinite alternate; }
-    @keyframes winCellPulse { from{box-shadow:inset 0 0 10px rgba(255,255,0,0.2);} to{box-shadow:inset 0 0 30px rgba(255,255,0,0.5);} }
+    .ttt-cell.x-cell { color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.5); border-color:#81d4fa; }
+    .ttt-cell.o-cell { color:#f8bbd0; text-shadow:0 2px 8px rgba(248,187,208,0.5); border-color:rgba(248,187,208,0.7); }
+    .ttt-cell.winner { background:rgba(255,213,79,0.15) !important; border-color:#ffd54f !important; animation:winCellPulse 0.5s ease infinite alternate; }
+    @keyframes winCellPulse { from{box-shadow:inset 0 0 10px rgba(255,213,79,0.2);} to{box-shadow:inset 0 0 30px rgba(255,213,79,0.5);} }
     .ttt-cell.pop { animation:cellPop 0.2s cubic-bezier(0.175,0.885,0.32,1.275); }
     @keyframes cellPop { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }
     .score-board { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; width:min(360px,80vw); margin:10px auto; }
@@ -22,16 +22,18 @@
     .score-box.x-box { border-color:rgba(129,212,250,0.7); }
     .score-box.o-box { border-color:rgba(248,187,208,0.7); }
     .score-num { font-family:'Fredoka One',cursive; font-size:24px; display:block; }
-    .score-box.x-box .score-num { color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.35); }
-    .score-box.o-box .score-num { color:#f8bbd0; text-shadow:0 2px 8px rgba(248,187,208,0.3); }
+    .score-box.x-box .score-num { color:#81d4fa; }
+    .score-box.o-box .score-num { color:#f8bbd0; }
     .score-lbl { font-size:9px; color:rgba(255,255,255,0.6); font-family:'Fredoka One',cursive; letter-spacing:1px; display:block; margin-top:4px; }
-    .vs-txt { font-family:'Fredoka One',cursive; font-size:14px; color:rgba(255,255,255,0.4); }
     .mode-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
     .mode-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:10px 18px; border:2px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.55); background:rgba(255,255,255,0.08); cursor:pointer; transition:all 0.2s; border-radius:22px; }
-    .mode-btn.active { border-color:rgba(248,187,208,0.8); color:#f8bbd0; background:rgba(248,187,208,0.12); box-shadow:0 4px 16px rgba(248,187,208,0.2); }
+    .mode-btn.active { border-color:rgba(248,187,208,0.8); color:#f8bbd0; background:rgba(248,187,208,0.12); }
+    .diff-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .diff-btn { font-family:'Fredoka One',cursive; font-size:7px; padding:8px 14px; border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.06); cursor:pointer; transition:all 0.2s; border-radius:20px; }
+    .diff-btn.active { border-color:#a5d6a7; color:#a5d6a7; background:rgba(165,214,167,0.1); }
     .turn-bar { font-family:'Fredoka One',cursive; font-size:11px; letter-spacing:2px; height:30px; text-align:center; }
     .draw-box { border-color:rgba(255,255,255,0.4); }
-    .draw-box .score-num { color:#888; }
+    .draw-box .score-num { color:rgba(255,255,255,0.5); }
   </style>
 </head>
 <body data-game="tic-tac-toe">
@@ -53,7 +55,15 @@
         <button class="mode-btn" data-mode="pvp">2 PLAYERS</button>
       </div>
     </div>
-    <button class="pixel-btn btn-magenta mt-16" onclick="startGame()"><span class="btn-span">▶ START GAME</span></button>
+    <div id="diff-section" style="margin-bottom:20px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:10px;letter-spacing:2px;">AI DIFFICULTY:</div>
+      <div class="diff-btns">
+        <button class="diff-btn active" data-diff="easy">😊 EASY</button>
+        <button class="diff-btn" data-diff="medium">🤔 MEDIUM</button>
+        <button class="diff-btn" data-diff="hard">😈 HARD</button>
+      </div>
+    </div>
+    <button class="pixel-btn btn-magenta" onclick="startGame()"><span class="btn-span">▶ START GAME</span></button>
   </div>
 
   <div id="screen-game" class="hidden">
@@ -64,7 +74,7 @@
           <span class="score-lbl" id="label-x">PLAYER X</span>
         </div>
         <div class="score-box draw-box" style="border-color:rgba(255,255,255,0.35);padding:8px;">
-          <span class="score-num" id="score-draw" style="color:#666;">0</span>
+          <span class="score-num" id="score-draw">0</span>
           <span class="score-lbl">DRAW</span>
         </div>
         <div class="score-box o-box">
@@ -85,14 +95,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/games.js"></script>
 <script src="../js/main.js"></script>
-
 <script>
 let board=Array(9).fill(null), xTurn=true, gameActive=false;
-let scores={x:0,o:0,d:0}, mode='ai', aiTurn=false;
+let scores={x:0,o:0,d:0}, mode='ai', aiTurn=false, difficulty='easy';
 const WIN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+// Probability of playing smart move per difficulty
+const SMART={easy:0.30, medium:0.60, hard:0.88};
 
 function startGame(){
   mode=document.querySelector('.mode-btn.active').dataset.mode;
+  difficulty=(document.querySelector('.diff-btn.active')||{dataset:{diff:'easy'}}).dataset.diff;
   document.getElementById('screen-start').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
   document.getElementById('label-o').textContent=mode==='ai'?'AI (O)':'PLAYER O';
@@ -109,8 +121,7 @@ function backToMenu(){
 function resetRound(){
   board=Array(9).fill(null);
   xTurn=true; gameActive=true; aiTurn=false;
-  renderBoard();
-  setTurnBar();
+  renderBoard(); setTurnBar();
 }
 
 function renderBoard(){
@@ -134,73 +145,73 @@ function handleClick(i){
   PH.playMove&&PH.playMove();
   const cells=document.querySelectorAll('.ttt-cell');
   if(cells[i]){ cells[i].textContent=board[i]; cells[i].classList.add(xTurn?'x-cell':'o-cell','taken','pop'); }
-  
   const w=checkWinner();
   if(w){ endGame(w); return; }
   if(board.every(c=>c)){ endGame(null); return; }
-  
-  xTurn=!xTurn;
-  setTurnBar();
-  
+  xTurn=!xTurn; setTurnBar();
   if(mode==='ai'&&!xTurn&&gameActive){
     aiTurn=true;
-    setTimeout(()=>{ aiMove(); aiTurn=false; }, 400);
+    setTimeout(()=>{ aiMove(); aiTurn=false; }, 350+Math.random()*350);
   }
 }
 
 function aiMove(){
   if(!gameActive) return;
-  // Minimax AI
-  let best=-Infinity, move=0;
-  board.forEach((v,i)=>{
-    if(!v){
-      board[i]='O';
-      const score=minimax(board,0,false);
-      board[i]=null;
-      if(score>best){ best=score; move=i; }
-    }
-  });
+  const empties=board.map((v,i)=>v===null?i:null).filter(i=>i!==null);
+  if(!empties.length) return;
+
+  let move;
+  if(Math.random()<SMART[difficulty]){
+    // Strategic: win > block > center > opposite corner > corner > side
+    move = findThreat('O')       // win immediately
+        ?? findThreat('X')       // block player
+        ?? (board[4]===null?4:null)  // center
+        ?? bestCorner()          // best corner
+        ?? empties[Math.floor(Math.random()*empties.length)];
+  } else {
+    // Random move - makes AI beatable
+    move=empties[Math.floor(Math.random()*empties.length)];
+  }
+
   board[move]='O';
   xTurn=true;
   PH.playBeep&&PH.playBeep(440,0.08,'square',0.08);
-  
   const cells=document.querySelectorAll('.ttt-cell');
   if(cells[move]){ cells[move].textContent='O'; cells[move].classList.add('o-cell','taken','pop'); }
-  
   const w=checkWinner();
   if(w){ endGame(w); return; }
   if(board.every(c=>c)){ endGame(null); return; }
   setTurnBar();
 }
 
-function minimax(b,depth,isMax){
-  const w=checkWinnerOnBoard(b);
-  if(w==='O') return 10-depth;
-  if(w==='X') return depth-10;
-  if(b.every(c=>c)) return 0;
-  if(isMax){
-    let best=-Infinity;
-    b.forEach((v,i)=>{ if(!v){ b[i]='O'; best=Math.max(best,minimax(b,depth+1,false)); b[i]=null; } });
-    return best;
-  } else {
-    let best=Infinity;
-    b.forEach((v,i)=>{ if(!v){ b[i]='X'; best=Math.min(best,minimax(b,depth+1,true)); b[i]=null; } });
-    return best;
+function findThreat(player){
+  for(const [a,b,c] of WIN){
+    const vals=[board[a],board[b],board[c]];
+    const idxs=[a,b,c];
+    if(vals.filter(v=>v===player).length===2){
+      const empty=idxs.find(i=>board[i]===null);
+      if(empty!==undefined) return empty;
+    }
   }
-}
-
-function checkWinnerOnBoard(b){
-  for(const [a,c,d] of WIN){ if(b[a]&&b[a]===b[c]&&b[a]===b[d]) return b[a]; }
   return null;
 }
 
+function bestCorner(){
+  // Prefer corner opposite to player's corner
+  const corners=[0,2,6,8];
+  const opp={0:8,2:6,6:2,8:0};
+  for(const c of corners){
+    if(board[c]==='X'&&board[opp[c]]===null) return opp[c];
+  }
+  const free=corners.filter(c=>board[c]===null);
+  return free.length?free[Math.floor(Math.random()*free.length)]:null;
+}
+
 function checkWinner(){
-  for(const combo of WIN){
-    const [a,c,d]=combo;
-    if(board[a]&&board[a]===board[c]&&board[a]===board[d]){
-      // Highlight winners
+  for(const [a,b,c] of WIN){
+    if(board[a]&&board[a]===board[b]&&board[a]===board[c]){
       const cells=document.querySelectorAll('.ttt-cell');
-      [a,c,d].forEach(i=>cells[i].classList.add('winner'));
+      [a,b,c].forEach(i=>cells[i].classList.add('winner'));
       return board[a];
     }
   }
@@ -209,15 +220,14 @@ function checkWinner(){
 
 function endGame(winner){
   gameActive=false;
-  if(winner==='X'){ scores.x++; PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('tic-tac-toe', scores.x); }
-  else if(winner==='O'){ scores.o++; if(mode==='ai') PH.playLose&&PH.playLose(); else { PH.playWin&&PH.playWin(); } }
+  if(winner==='X'){ scores.x++; PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('tic-tac-toe',scores.x); }
+  else if(winner==='O'){ scores.o++; if(mode==='ai') PH.playLose&&PH.playLose(); else PH.playWin&&PH.playWin(); }
   else { scores.d++; PH.playBeep&&PH.playBeep(440,0.3,'sine',0.1); }
   updateScores();
-  
   const tb=document.getElementById('turn-bar');
-  if(winner){ tb.innerHTML=`<span style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)">${winner} WINS! 🏆</span>`; }
-  else { tb.innerHTML=`<span style="color:#888">DRAW! 🤝</span>`; }
-  setTimeout(resetRound,2000);
+  if(winner) tb.innerHTML=`<span style="color:#ffd54f">${winner} WINS! 🏆</span>`;
+  else tb.innerHTML=`<span style="color:rgba(255,255,255,0.5)">DRAW! 🤝</span>`;
+  setTimeout(resetRound,2200);
 }
 
 function updateScores(){
@@ -230,13 +240,22 @@ function setTurnBar(){
   const tb=document.getElementById('turn-bar');
   const who=xTurn?'X':'O';
   const color=xTurn?'#81d4fa':'#f8bbd0';
-  const label=mode==='ai'&&!xTurn?'AI':'PLAYER '+who;
-  tb.innerHTML=`<span style="color:${color};text-shadow:0 2px 8px rgba(0,0,0,0.2)">${label}'S TURN</span>`;
+  const label=mode==='ai'&&!xTurn?'AI THINKING...':'PLAYER '+who+"'S TURN";
+  tb.innerHTML=`<span style="color:${color}">${label}</span>`;
 }
 
 document.querySelectorAll('.mode-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('diff-section').style.display=btn.dataset.mode==='ai'?'block':'none';
+    PH.playClick&&PH.playClick();
+  });
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     PH.playClick&&PH.playClick();
   });
