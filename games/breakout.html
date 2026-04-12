@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Breakout - PixelHub</title>
+  <title>Breakout - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .breakout-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
-    .breakout-hud{display:flex;gap:24px;font-family:'Press Start 2P',monospace;font-size:10px}
+    .breakout-hud{display:flex;gap:24px;font-family:'Fredoka One',cursive;font-size:10px}
     .hud-item span{display:block;font-size:18px;color:var(--neon-cyan);text-shadow:0 0 10px var(--neon-cyan);text-align:center}
-    .hud-item label{display:block;color:#aac;font-size:8px;margin-top:2px;text-align:center}
+    .hud-item label{display:block;color:rgba(255,255,255,0.6);font-size:8px;margin-top:2px;text-align:center}
     #breakout-canvas{image-rendering:pixelated;touch-action:none;cursor:none}
-    .mobile-note{font-family:'Press Start 2P',monospace;font-size:7px;color:#556;text-align:center}
+    .mobile-note{font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.38);text-align:center}
     @media(min-width:600px){.mobile-note{display:none}}
     .lives-row{display:flex;gap:6px;align-items:center}
     .life-pip{width:10px;height:10px;background:var(--neon-magenta);box-shadow:0 0 8px var(--neon-magenta)}
@@ -30,8 +31,8 @@
   <div id="screen-start" class="game-screen" style="position:relative;max-width:460px;margin:40px auto;">
     <h1>🧱 BREAKOUT</h1>
     <p>Break all the bricks with your paddle and ball. Don't let the ball fall! 3 lives per game.</p>
-    <p style="margin-top:8px;color:#00ffff;font-size:11px;">Mouse/Touch to move paddle. Survive all levels!</p>
-    <div style="margin:16px 0;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;">HIGH SCORE: <span class="neon-cyan" id="best-display">0</span></div>
+    <p style="margin-top:8px;color:#81d4fa;font-size:11px;">Mouse/Touch to move paddle. Survive all levels!</p>
+    <div style="margin:16px 0;font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);">HIGH SCORE: <span class="neon-cyan" id="best-display">0</span></div>
     <button class="pixel-btn btn-magenta" onclick="startBreakout()"><span class="btn-span">▶ START GAME</span></button>
   </div>
 

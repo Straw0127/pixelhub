@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memory Cards - PixelHub</title>
+  <title>Memory Cards - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .mem-wrap { display:flex; flex-direction:column; align-items:center; padding:16px; gap:12px; }
@@ -16,20 +17,20 @@
     .mem-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); }
     .mem-card.flipped .mem-card-inner { transform:rotateY(180deg); }
     .mem-card.matched .mem-card-inner { transform:rotateY(180deg); }
-    .mem-card.matched .card-front { background:rgba(0,255,136,0.15); border-color:#00ff88; box-shadow:0 0 15px rgba(0,255,136,0.4); }
+    .mem-card.matched .card-front { background:rgba(0,255,136,0.15); border-color:#a5d6a7; box-shadow:0 0 15px rgba(0,255,136,0.4); }
     .card-front,.card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; border:2px solid; }
     .card-back { background:#120020; border-color:rgba(0,255,255,0.3); font-size:min(28px,5vw); }
-    .card-back::after { content:'?'; font-family:'Press Start 2P',monospace; font-size:min(16px,3vw); color:rgba(0,255,255,0.3); }
+    .card-back::after { content:'?'; font-family:'Fredoka One',cursive; font-size:min(16px,3vw); color:rgba(0,255,255,0.3); }
     .card-front { background:#0d001a; border-color:rgba(0,255,255,0.4); transform:rotateY(180deg); font-size:min(36px,7vw); }
-    .mem-card:not(.matched):not(.flipped):hover .card-back { border-color:#00ffff; box-shadow:0 0 10px rgba(0,255,255,0.2); }
+    .mem-card:not(.matched):not(.flipped):hover .card-back { border-color:#81d4fa; box-shadow:0 0 10px rgba(0,255,255,0.2); }
     .mem-stats { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
-    .mem-stat { text-align:center; font-family:'Press Start 2P',monospace; font-size:9px; }
-    .mem-stat-num { font-size:20px; display:block; color:#00ffff; text-shadow:0 0 10px #00ffff; }
-    .mem-stat span { color:#aac; display:block; margin-top:4px; }
+    .mem-stat { text-align:center; font-family:'Fredoka One',cursive; font-size:9px; }
+    .mem-stat-num { font-size:20px; display:block; color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.35); }
+    .mem-stat span { color:rgba(255,255,255,0.6); display:block; margin-top:4px; }
     .diff-sel { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-    .diff-card { font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
-    .diff-card.active { border-color:#00ffff; color:#00ffff; box-shadow:0 0 8px rgba(0,255,255,0.3); }
-    #timer-display { font-family:'Press Start 2P',monospace; font-size:18px; }
+    .diff-card { font-family:'Fredoka One',cursive; font-size:8px; padding:10px 16px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .diff-card.active { border-color:#81d4fa; color:#81d4fa; box-shadow:0 0 8px rgba(0,255,255,0.3); }
+    #timer-display { font-family:'Fredoka One',cursive; font-size:18px; }
     .timer-warn { color:#ff6600 !important; text-shadow:0 0 10px #ff6600 !important; animation:blink 0.5s step-end infinite; }
   </style>
 </head>
@@ -46,15 +47,15 @@
     <h1>🃏 MEMORY CARDS</h1>
     <p>Flip cards to find matching pairs. Remember positions and match them all!</p>
     <div style="margin:20px 0;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:12px;letter-spacing:2px;">SELECT DIFFICULTY:</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">SELECT DIFFICULTY:</div>
       <div class="diff-sel">
-        <button class="diff-card active" data-pairs="8" data-time="60">EASY<br><span style="font-size:7px;color:#aac">8 PAIRS 60s</span></button>
-        <button class="diff-card" data-pairs="10" data-time="45">MEDIUM<br><span style="font-size:7px;color:#aac">10 PAIRS 45s</span></button>
-        <button class="diff-card" data-pairs="12" data-time="30">HARD<br><span style="font-size:7px;color:#aac">12 PAIRS 30s</span></button>
+        <button class="diff-card active" data-pairs="8" data-time="60">EASY<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">8 PAIRS 60s</span></button>
+        <button class="diff-card" data-pairs="10" data-time="45">MEDIUM<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">10 PAIRS 45s</span></button>
+        <button class="diff-card" data-pairs="12" data-time="30">HARD<br><span style="font-size:7px;color:rgba(255,255,255,0.6)">12 PAIRS 30s</span></button>
       </div>
     </div>
     <button class="pixel-btn btn-cyan mt-16" onclick="startMemory()"><span class="btn-span">▶ START GAME</span></button>
-    <div style="margin-top:12px;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac">HIGH SCORE: <span id="best-display" class="neon-cyan">0</span></div>
+    <div style="margin-top:12px;font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6)">HIGH SCORE: <span id="best-display" class="neon-cyan">0</span></div>
   </div>
 
   <div id="screen-game" class="hidden">
@@ -62,7 +63,7 @@
       <div class="mem-stats">
         <div class="mem-stat"><span class="mem-stat-num" id="moves-disp">0</span><span>MOVES</span></div>
         <div class="mem-stat"><span class="mem-stat-num neon-green" id="matches-disp">0</span><span>MATCHED</span></div>
-        <div class="mem-stat"><span class="mem-stat-num" id="timer-display" style="color:#ffff00;text-shadow:0 0 10px #ffff00">60</span><span>SECONDS</span></div>
+        <div class="mem-stat"><span class="mem-stat-num" id="timer-display" style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)">60</span><span>SECONDS</span></div>
       </div>
       <div class="mem-grid" id="mem-grid"></div>
       <button class="pixel-btn btn-cyan" onclick="startMemory()"><span class="btn-span">↺ RESTART</span></button>

@@ -3,34 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Quiz - PixelHub</title>
+  <title>Math Quiz - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .math-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px; max-width:500px; margin:0 auto; width:100%; }
-    .question-box { font-family:'Press Start 2P',monospace; font-size:clamp(28px,6vw,52px); color:#ffff00; text-shadow:0 0 20px #ffff00,0 0 40px rgba(255,255,0,0.5); padding:24px 40px; border:2px solid rgba(255,255,0,0.3); background:#0d0d00; text-align:center; width:100%; min-height:100px; display:flex; align-items:center; justify-content:center; transition:all 0.3s; }
-    .question-box.correct-flash { background:rgba(0,255,136,0.15); border-color:#00ff88; }
+    .question-box { font-family:'Fredoka One',cursive; font-size:clamp(28px,6vw,52px); color:#ffd54f; text-shadow:0 2px 16px rgba(0,80,200,0.3); padding:24px 40px; border:2px solid rgba(255,255,255,0.28); background:rgba(21,101,192,0.28); text-align:center; width:100%; min-height:100px; display:flex; align-items:center; justify-content:center; transition:all 0.3s; }
+    .question-box.correct-flash { background:rgba(0,255,136,0.15); border-color:#a5d6a7; }
     .question-box.wrong-flash { background:rgba(255,68,68,0.15); border-color:#ff4444; animation:shake2 0.3s ease; }
     @keyframes shake2 { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
     .answer-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
-    .answer-opt { font-family:'Press Start 2P',monospace; font-size:clamp(14px,3vw,20px); padding:20px; border:2px solid rgba(255,255,0,0.3); background:#0a0a00; color:#ffff00; cursor:pointer; text-align:center; transition:all 0.2s; }
-    .answer-opt:hover:not(:disabled) { border-color:#ffff00; background:rgba(255,255,0,0.1); box-shadow:0 0 15px rgba(255,255,0,0.3); transform:scale(1.03); }
-    .answer-opt.correct { border-color:#00ff88 !important; background:rgba(0,255,136,0.2) !important; color:#00ff88 !important; }
+    .answer-opt { font-family:'Fredoka One',cursive; font-size:clamp(14px,3vw,20px); padding:20px; border:2px solid rgba(255,255,255,0.28); background:rgba(21,101,192,0.2); color:#ffd54f; cursor:pointer; text-align:center; transition:all 0.2s; }
+    .answer-opt:hover:not(:disabled) { border-color:#ffd54f; background:rgba(255,255,0,0.1); box-shadow:0 0 15px rgba(255,255,0,0.3); transform:scale(1.03); }
+    .answer-opt.correct { border-color:#a5d6a7 !important; background:rgba(0,255,136,0.2) !important; color:#a5d6a7 !important; }
     .answer-opt.wrong { border-color:#ff4444 !important; background:rgba(255,68,68,0.2) !important; color:#ff4444 !important; }
     .answer-opt:disabled { cursor:default; }
     .math-stats { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; width:100%; }
-    .math-stat { text-align:center; padding:10px 16px; background:#0a0a00; border:2px solid rgba(255,255,0,0.2); flex:1; min-width:80px; }
-    .math-stat-num { font-family:'Press Start 2P',monospace; font-size:20px; display:block; }
-    .math-stat-label { font-size:8px; color:#aac; font-family:'Press Start 2P',monospace; display:block; margin-top:3px; }
+    .math-stat { text-align:center; padding:10px 16px; background:rgba(21,101,192,0.2); border:2px solid rgba(255,255,0,0.2); flex:1; min-width:80px; }
+    .math-stat-num { font-family:'Fredoka One',cursive; font-size:20px; display:block; }
+    .math-stat-label { font-size:8px; color:rgba(255,255,255,0.6); font-family:'Fredoka One',cursive; display:block; margin-top:3px; }
     .diff-math { display:flex; gap:10px; justify-content:center; }
-    .diff-math-btn { font-family:'Press Start 2P',monospace; font-size:8px; padding:8px 14px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
-    .diff-math-btn.active { border-color:#ffff00; color:#ffff00; box-shadow:0 0 8px rgba(255,255,0,0.3); }
+    .diff-math-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .diff-math-btn.active { border-color:#ffd54f; color:#ffd54f; box-shadow:0 0 8px rgba(255,255,0,0.3); }
     .lives { display:flex; gap:8px; font-size:20px; }
     .streak-bar { width:100%; height:6px; background:rgba(255,255,0,0.1); }
     .streak-fill { height:100%; background:linear-gradient(90deg,#ffff00,#ff6600); transition:width 0.4s ease; box-shadow:0 0 8px #ffff00; }
-    #feedback-label { font-family:'Press Start 2P',monospace; font-size:12px; min-height:20px; text-align:center; letter-spacing:2px; }
-    .math-input { background:#0a0a00; border:2px solid rgba(255,255,0,0.4); color:#ffff00; font-family:'Press Start 2P',monospace; font-size:24px; padding:14px; text-align:center; width:100%; outline:none; transition:all 0.2s; }
-    .math-input:focus { border-color:#ffff00; box-shadow:0 0 15px rgba(255,255,0,0.3); }
+    #feedback-label { font-family:'Fredoka One',cursive; font-size:12px; min-height:20px; text-align:center; letter-spacing:2px; }
+    .math-input { background:rgba(21,101,192,0.2); border:2px solid rgba(255,255,0,0.4); color:#ffd54f; font-family:'Fredoka One',cursive; font-size:24px; padding:14px; text-align:center; width:100%; outline:none; transition:all 0.2s; }
+    .math-input:focus { border-color:#ffd54f; box-shadow:0 0 15px rgba(255,255,0,0.3); }
   </style>
 </head>
 <body data-game="math-quiz">
@@ -46,14 +47,14 @@
     <h1>🔢 MATH QUIZ</h1>
     <p>Quick arithmetic! Answer as fast as possible. You get 3 lives. 20 questions per round!</p>
     <div style="margin:20px 0;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:12px;letter-spacing:2px;">DIFFICULTY:</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">DIFFICULTY:</div>
       <div class="diff-math">
         <button class="diff-math-btn active" data-diff="easy">EASY<br><span style="font-size:7px;color:#777">+−</span></button>
         <button class="diff-math-btn" data-diff="medium">MEDIUM<br><span style="font-size:7px;color:#777">+−×</span></button>
         <button class="diff-math-btn" data-diff="hard">HARD<br><span style="font-size:7px;color:#777">+−×÷</span></button>
       </div>
     </div>
-    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:16px;">
+    <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:16px;">
       HIGH SCORE: <span class="neon-yellow" id="best-display">0</span>
     </div>
     <button class="pixel-btn btn-yellow" onclick="startMath()"><span class="btn-span">▶ START QUIZ</span></button>
@@ -64,7 +65,7 @@
       <div class="math-stats">
         <div class="math-stat"><span class="math-stat-num neon-yellow" id="score-disp">0</span><span class="math-stat-label">SCORE</span></div>
         <div class="math-stat"><span class="math-stat-num neon-cyan" id="q-disp">0/20</span><span class="math-stat-label">QUESTION</span></div>
-        <div class="math-stat"><span class="math-stat-num" style="color:#ffff00;text-shadow:0 0 10px #ffff00" id="timer-disp">10</span><span class="math-stat-label">SECS</span></div>
+        <div class="math-stat"><span class="math-stat-num" style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)" id="timer-disp">10</span><span class="math-stat-label">SECS</span></div>
         <div class="math-stat"><span class="math-stat-num neon-green" id="streak-disp">0</span><span class="math-stat-label">STREAK</span></div>
       </div>
       <div class="lives" id="lives-disp">❤️❤️❤️</div>
@@ -79,17 +80,17 @@
     <h1 id="end-title">🏆 QUIZ DONE!</h1>
     <span class="final-score" id="end-score">0</span>
     <div style="display:flex;gap:20px;justify-content:center;margin:16px 0;flex-wrap:wrap;">
-      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:9px;">
-        <span style="color:#00ff88;font-size:20px;display:block;" id="end-correct">0</span>
-        <span style="color:#aac;">CORRECT</span>
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:9px;">
+        <span style="color:#a5d6a7;font-size:20px;display:block;" id="end-correct">0</span>
+        <span style="color:rgba(255,255,255,0.6);">CORRECT</span>
       </div>
-      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:9px;">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:9px;">
         <span style="color:#ff4444;font-size:20px;display:block;" id="end-wrong">0</span>
-        <span style="color:#aac;">WRONG</span>
+        <span style="color:rgba(255,255,255,0.6);">WRONG</span>
       </div>
-      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:9px;">
-        <span style="color:#ffff00;font-size:20px;display:block;" id="end-maxstreak">0</span>
-        <span style="color:#aac;">MAX STREAK</span>
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:9px;">
+        <span style="color:#ffd54f;font-size:20px;display:block;" id="end-maxstreak">0</span>
+        <span style="color:rgba(255,255,255,0.6);">MAX STREAK</span>
       </div>
     </div>
     <p id="end-msg"></p>

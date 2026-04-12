@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .snake-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px; }
     #snake-canvas { image-rendering:pixelated; }
     .mobile-controls { display:grid; grid-template-areas:'. up .' 'left . right' '. down .'; gap:6px; margin-top:8px; }
-    .ctrl-btn { width:50px; height:50px; background:rgba(0,255,136,0.1); border:2px solid rgba(0,255,136,0.4); color:#00ff88; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
+    .ctrl-btn { width:50px; height:50px; background:rgba(0,255,136,0.1); border:2px solid rgba(0,255,136,0.4); color:#a5d6a7; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
     .ctrl-btn:active { background:rgba(0,255,136,0.3); box-shadow:0 0 15px rgba(0,255,136,0.4); }
     .ctrl-up { grid-area:up; }
     .ctrl-down { grid-area:down; }
     .ctrl-left { grid-area:left; }
     .ctrl-right { grid-area:right; }
     .snake-stats { display:flex; gap:20px; }
-    .snake-stat { font-family:'Press Start 2P',monospace; font-size:10px; text-align:center; }
-    .snake-stat-num { display:block; font-size:20px; color:#00ff88; text-shadow:0 0 10px #00ff88; }
-    .snake-stat span { color:#aac; display:block; margin-top:3px; }
+    .snake-stat { font-family:'Fredoka One',cursive; font-size:10px; text-align:center; }
+    .snake-stat-num { display:block; font-size:20px; color:#a5d6a7; text-shadow:0 0 10px #00ff88; }
+    .snake-stat span { color:rgba(255,255,255,0.6); display:block; margin-top:3px; }
     @media(min-width:600px){ .mobile-controls{display:none;} }
   </style>
 </head>
@@ -35,8 +36,8 @@
   <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
     <h1>🐍 SNAKE</h1>
     <p>Eat food to grow! Avoid walls and your own tail. How long can you survive?</p>
-    <p style="margin-top:8px;color:#00ff88;font-size:11px;">Arrow keys or WASD to move. Swipe on mobile.</p>
-    <div style="margin:16px 0;font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;">HIGH SCORE: <span class="neon-green" id="best-display">0</span></div>
+    <p style="margin-top:8px;color:#a5d6a7;font-size:11px;">Arrow keys or WASD to move. Swipe on mobile.</p>
+    <div style="margin:16px 0;font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);">HIGH SCORE: <span class="neon-green" id="best-display">0</span></div>
     <button class="pixel-btn btn-green" onclick="startSnake()"><span class="btn-span">▶ START GAME</span></button>
   </div>
 
@@ -44,8 +45,8 @@
     <div class="snake-wrap">
       <div class="snake-stats">
         <div class="snake-stat"><span class="snake-stat-num" id="score-disp">0</span><span>SCORE</span></div>
-        <div class="snake-stat"><span class="snake-stat-num" style="color:#ffff00;text-shadow:0 0 10px #ffff00" id="length-disp">1</span><span>LENGTH</span></div>
-        <div class="snake-stat"><span class="snake-stat-num" style="color:#ff00ff;text-shadow:0 0 10px #ff00ff" id="level-disp">1</span><span>LEVEL</span></div>
+        <div class="snake-stat"><span class="snake-stat-num" style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)" id="length-disp">1</span><span>LENGTH</span></div>
+        <div class="snake-stat"><span class="snake-stat-num" style="color:#f8bbd0;text-shadow:0 2px 8px rgba(248,187,208,0.3)" id="level-disp">1</span><span>LEVEL</span></div>
       </div>
       <div class="canvas-wrap">
         <canvas id="snake-canvas"></canvas>

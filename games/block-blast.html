@@ -4,18 +4,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Block Blast - PixelHub</title>
+  <title>Block Blast - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .bb-wrap{max-width:600px;margin:0 auto;padding:20px;text-align:center;}
     #bb-canvas{border:3px solid #00ffff;box-shadow:0 0 20px rgba(0,255,255,0.4);display:block;margin:0 auto;cursor:pointer;}
     .bb-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
-    .bb-stat{font-family:'Press Start 2P',monospace;font-size:10px;color:#aac;}
-    .bb-stat span{color:#ffff00;text-shadow:0 0 6px #ffff00;}
+    .bb-stat{font-family:'Fredoka One',cursive;font-size:10px;color:rgba(255,255,255,0.6);}
+    .bb-stat span{color:#ffd54f;text-shadow:0 0 6px #ffff00;}
     .next-row{display:flex;gap:12px;justify-content:center;margin-bottom:16px;align-items:center;}
     .next-canvas{border:2px solid #333;display:block;}
-    .next-label{font-family:'Press Start 2P',monospace;font-size:8px;color:#555;text-align:center;margin-bottom:4px;}
+    .next-label{font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;}
   </style>
 </head>
 <body data-game="block-blast">
@@ -29,10 +30,10 @@
 
   <div id="screen-start" class="game-screen">
     <div class="card" style="max-width:440px;margin:40px auto;padding:30px;text-align:center;">
-      <h1 style="font-family:'Press Start 2P',monospace;font-size:20px;color:#00ffff;text-shadow:0 0 20px #00ffff;margin-bottom:16px;">💥 BLOCK BLAST</h1>
-      <p style="font-family:'Share Tech Mono',monospace;color:#aac;line-height:1.7;margin-bottom:24px;">Tetris-style! Place blocks to fill rows and columns.<br>Blast complete lines for points!<br>Game ends when no blocks fit.</p>
-      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 10px #ffff00;" id="best-bb">0</span><br><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST SCORE</span></div>
-      <button style="font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border:3px solid #00ffff;color:#00ffff;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,255,0.1)'" onmouseout="this.style.background='transparent'" onclick="startGame()">▶ PLAY</button>
+      <h1 style="font-family:'Fredoka One',cursive;font-size:20px;color:#81d4fa;text-shadow:0 0 20px #00ffff;margin-bottom:16px;">💥 BLOCK BLAST</h1>
+      <p style="font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:24px;">Tetris-style! Place blocks to fill rows and columns.<br>Blast complete lines for points!<br>Game ends when no blocks fit.</p>
+      <div style="text-align:center;margin-bottom:20px;"><span style="font-family:'Fredoka One',cursive;font-size:22px;color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4);" id="best-bb">0</span><br><span style="font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.4);">BEST SCORE</span></div>
+      <button style="font-family:'Fredoka One',cursive;font-size:12px;padding:16px 32px;border:3px solid #00ffff;color:#81d4fa;background:transparent;cursor:pointer;width:100%;letter-spacing:3px;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,255,0.1)'" onmouseout="this.style.background='transparent'" onclick="startGame()">▶ PLAY</button>
     </div>
   </div>
 
@@ -45,19 +46,19 @@
       </div>
       <div class="next-row" id="piece-queue"></div>
       <canvas id="bb-canvas" width="360" height="360"></canvas>
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#555;margin-top:10px;">DRAG OR CLICK PIECE THEN CLICK BOARD</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.4);margin-top:10px;">DRAG OR CLICK PIECE THEN CLICK BOARD</div>
     </div>
   </div>
 
   <div id="screen-end" class="game-screen hidden">
     <div class="card" style="max-width:400px;margin:40px auto;padding:30px;text-align:center;">
-      <h2 style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff4444;text-shadow:0 0 15px #ff4444;margin-bottom:16px;">NO MOVES LEFT!</h2>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:16px;color:#ff4444;text-shadow:0 2px 10px rgba(229,57,53,0.4);margin-bottom:16px;">NO MOVES LEFT!</h2>
       <div style="display:flex;gap:20px;justify-content:center;margin-bottom:24px;">
-        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ffff00;text-shadow:0 0 12px #ffff00;display:block;" id="final-bb-score">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">SCORE</span></div>
-        <div style="text-align:center;"><span style="font-family:'Press Start 2P',monospace;font-size:22px;color:#00ff88;text-shadow:0 0 12px #00ff88;display:block;" id="final-bb-best">0</span><span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#555;">BEST</span></div>
+        <div style="text-align:center;"><span style="font-family:'Fredoka One',cursive;font-size:22px;color:#ffd54f;text-shadow:0 0 10px rgba(255,213,79,0.4);display:block;" id="final-bb-score">0</span><span style="font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.4);">SCORE</span></div>
+        <div style="text-align:center;"><span style="font-family:'Fredoka One',cursive;font-size:22px;color:#a5d6a7;text-shadow:0 0 12px #00ff88;display:block;" id="final-bb-best">0</span><span style="font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.4);">BEST</span></div>
       </div>
-      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #00ffff;color:#00ffff;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;transition:all 0.2s;" onclick="startGame()">▶ PLAY AGAIN</button>
-      <button style="font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;border:2px solid #555;color:#555;background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
+      <button style="font-family:'Fredoka One',cursive;font-size:10px;padding:14px 28px;border:2px solid #00ffff;color:#81d4fa;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;transition:all 0.2s;" onclick="startGame()">▶ PLAY AGAIN</button>
+      <button style="font-family:'Fredoka One',cursive;font-size:10px;padding:14px 28px;border:2px solid #555;color:rgba(255,255,255,0.4);background:transparent;cursor:pointer;width:100%;" onclick="PH.showScreen('screen-start')">MENU</button>
     </div>
   </div>
 </div>
@@ -174,7 +175,7 @@
       }
       wrap.appendChild(cv);
       const lbl=document.createElement('div');
-      lbl.style.cssText='font-family:"Press Start 2P",monospace;font-size:7px;color:#555;text-align:center;margin-top:3px;';
+      lbl.style.cssText='font-family:"Fredoka One",cursive;font-size:7px;color:rgba(255,255,255,0.4);text-align:center;margin-top:3px;';
       lbl.textContent=i===0?'A':i===1?'B':'C';
       wrap.appendChild(lbl);
       wrap.onclick=()=>{ selected=piece; buildQueue(); draw(); };

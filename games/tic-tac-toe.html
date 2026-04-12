@@ -3,33 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic-Tac-Toe - PixelHub</title>
+  <title>Tic-Tac-Toe - SkyWorld</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
   <link rel="stylesheet" href="../css/animations.css">
   <style>
     .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(360px,80vw); height:min(360px,80vw); margin:20px auto; }
-    .ttt-cell { background:#120020; border:2px solid rgba(255,0,255,0.3); display:flex; align-items:center; justify-content:center; font-size:min(70px,14vw); cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
-    .ttt-cell:hover:not(.taken) { background:#1e0030; border-color:#ff00ff; box-shadow:inset 0 0 20px rgba(255,0,255,0.1); }
-    .ttt-cell.x-cell { color:#00ffff; text-shadow:0 0 15px #00ffff,0 0 30px #00ffff; border-color:#00ffff; }
-    .ttt-cell.o-cell { color:#ff00ff; text-shadow:0 0 15px #ff00ff,0 0 30px #ff00ff; border-color:#ff00ff; }
-    .ttt-cell.winner { background:rgba(255,255,0,0.1) !important; border-color:#ffff00 !important; animation:winCellPulse 0.5s ease infinite alternate; }
+    .ttt-cell { background:#120020; border:2px solid rgba(255,255,255,0.28); display:flex; align-items:center; justify-content:center; font-size:min(70px,14vw); cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+    .ttt-cell:hover:not(.taken) { background:#1e0030; border-color:rgba(248,187,208,0.7); box-shadow:inset 0 0 14px rgba(255,255,255,0.06); }
+    .ttt-cell.x-cell { color:#81d4fa; text-shadow:0 0 12px rgba(129,212,250,0.55); border-color:#81d4fa; }
+    .ttt-cell.o-cell { color:#f8bbd0; text-shadow:0 0 12px rgba(248,187,208,0.5); border-color:rgba(248,187,208,0.7); }
+    .ttt-cell.winner { background:rgba(255,255,0,0.1) !important; border-color:#ffd54f !important; animation:winCellPulse 0.5s ease infinite alternate; }
     @keyframes winCellPulse { from{box-shadow:inset 0 0 10px rgba(255,255,0,0.2);} to{box-shadow:inset 0 0 30px rgba(255,255,0,0.5);} }
     .ttt-cell.pop { animation:cellPop 0.2s cubic-bezier(0.175,0.885,0.32,1.275); }
     @keyframes cellPop { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }
     .score-board { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; width:min(360px,80vw); margin:10px auto; }
     .score-box { text-align:center; padding:12px; border:2px solid; }
-    .score-box.x-box { border-color:#00ffff; }
-    .score-box.o-box { border-color:#ff00ff; }
-    .score-num { font-family:'Press Start 2P',monospace; font-size:24px; display:block; }
-    .score-box.x-box .score-num { color:#00ffff; text-shadow:0 0 10px #00ffff; }
-    .score-box.o-box .score-num { color:#ff00ff; text-shadow:0 0 10px #ff00ff; }
-    .score-lbl { font-size:9px; color:#aac; font-family:'Press Start 2P',monospace; letter-spacing:1px; display:block; margin-top:4px; }
-    .vs-txt { font-family:'Press Start 2P',monospace; font-size:14px; color:#555; }
+    .score-box.x-box { border-color:rgba(129,212,250,0.7); }
+    .score-box.o-box { border-color:rgba(248,187,208,0.7); }
+    .score-num { font-family:'Fredoka One',cursive; font-size:24px; display:block; }
+    .score-box.x-box .score-num { color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.35); }
+    .score-box.o-box .score-num { color:#f8bbd0; text-shadow:0 2px 8px rgba(248,187,208,0.3); }
+    .score-lbl { font-size:9px; color:rgba(255,255,255,0.6); font-family:'Fredoka One',cursive; letter-spacing:1px; display:block; margin-top:4px; }
+    .vs-txt { font-family:'Fredoka One',cursive; font-size:14px; color:rgba(255,255,255,0.4); }
     .mode-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-    .mode-btn { font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 18px; border:2px solid #555; color:#555; background:transparent; cursor:pointer; transition:all 0.2s; }
-    .mode-btn.active { border-color:#ff00ff; color:#ff00ff; box-shadow:0 0 10px rgba(255,0,255,0.3); }
-    .turn-bar { font-family:'Press Start 2P',monospace; font-size:11px; letter-spacing:2px; height:30px; text-align:center; }
-    .draw-box { border-color:#555; }
+    .mode-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:10px 18px; border:2px solid #555; color:rgba(255,255,255,0.4); background:transparent; cursor:pointer; transition:all 0.2s; }
+    .mode-btn.active { border-color:rgba(248,187,208,0.7); color:#f8bbd0; box-shadow:0 0 10px rgba(255,213,79,0.2); }
+    .turn-bar { font-family:'Fredoka One',cursive; font-size:11px; letter-spacing:2px; height:30px; text-align:center; }
+    .draw-box { border-color:rgba(255,255,255,0.4); }
     .draw-box .score-num { color:#888; }
   </style>
 </head>
@@ -46,7 +47,7 @@
     <h1>⭕ TIC-TAC-TOE</h1>
     <p>Classic X vs O. Get 3 in a row to win!</p>
     <div style="margin:20px 0;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#aac;margin-bottom:12px;letter-spacing:2px;">SELECT MODE:</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">SELECT MODE:</div>
       <div class="mode-btns">
         <button class="mode-btn active" data-mode="ai">VS AI</button>
         <button class="mode-btn" data-mode="pvp">2 PLAYERS</button>
@@ -62,7 +63,7 @@
           <span class="score-num" id="score-x">0</span>
           <span class="score-lbl" id="label-x">PLAYER X</span>
         </div>
-        <div class="score-box draw-box" style="border-color:#444;padding:8px;">
+        <div class="score-box draw-box" style="border-color:rgba(255,255,255,0.35);padding:8px;">
           <span class="score-num" id="score-draw" style="color:#666;">0</span>
           <span class="score-lbl">DRAW</span>
         </div>
@@ -214,7 +215,7 @@ function endGame(winner){
   updateScores();
   
   const tb=document.getElementById('turn-bar');
-  if(winner){ tb.innerHTML=`<span style="color:#ffff00;text-shadow:0 0 10px #ffff00">${winner} WINS! 🏆</span>`; }
+  if(winner){ tb.innerHTML=`<span style="color:#ffd54f;text-shadow:0 2px 8px rgba(255,213,79,0.4)">${winner} WINS! 🏆</span>`; }
   else { tb.innerHTML=`<span style="color:#888">DRAW! 🤝</span>`; }
   setTimeout(resetRound,2000);
 }

@@ -3,469 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyWorld - Sky Adventure Games</title>
-  <meta name="description" content="SkyWorld - Play sky adventure mini-games in your browser. Free, instant play, no downloads.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤</text></svg>">
-
-  <!-- SUPABASE AUTH + LEADERBOARD STYLES -->
+  <title>Pong - SkyWorld</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/games.css">
+  <link rel="stylesheet" href="../css/animations.css">
   <style>
-    .auth-controls{display:flex;align-items:center;gap:8px;}
-
-    /* ── HAMBURGER MENU ── */
-    .hamburger-btn{
-      display:none;
-      background:none;border:2px solid #00ffff;
-      color:#00ffff;font-size:18px;cursor:pointer;
-      padding:5px 10px;line-height:1;
-      box-shadow:0 0 8px #00ffff44;
-      transition:background .15s,box-shadow .15s;
-    }
-    .hamburger-btn:hover{background:#00ffff22;box-shadow:0 0 14px #00ffff88;}
-
-    .mobile-menu{
-      display:none;
-      position:fixed;top:0;right:0;
-      width:75vw;max-width:280px;height:100vh;
-      background:#080818;border-left:2px solid #00ffff;
-      box-shadow:-10px 0 40px #00ffff33;
-      z-index:20000;
-      flex-direction:column;
-      padding:20px 16px;gap:12px;
-      animation:slideInRight .2s ease;
-    }
-    .mobile-menu.open{display:flex;}
-    @keyframes slideInRight{from{transform:translateX(100%);}to{transform:translateX(0);}}
-
-    .mobile-menu-header{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:8px;padding-bottom:12px;
-      border-bottom:1px solid #222;
-    }
-    .mobile-menu-title{
-      font-family:'Press Start 2P',monospace;font-size:9px;
-      color:#00ffff;text-shadow:0 0 8px #00ffff;letter-spacing:2px;
-    }
-    .mobile-menu-close{
-      background:none;border:none;color:#ff00ff;
-      font-size:20px;cursor:pointer;line-height:1;padding:0;
-    }
-
-    .mobile-menu .btn-pixel{
-      width:100%;text-align:center;padding:12px 10px;font-size:8px;
-    }
-    .mobile-menu .auth-user-email{
-      text-align:center;width:100%;font-size:7px;padding:8px 0;
-      border-bottom:1px solid #222;margin-bottom:4px;
-    }
-    .mobile-menu-divider{
-      height:1px;background:#1a1a2e;margin:4px 0;
-    }
-    .mobile-menu-sound{
-      display:flex;align-items:center;justify-content:space-between;
-      font-family:'Press Start 2P',monospace;font-size:7px;color:#888;
-      padding:8px 0;
-    }
-
-    .mobile-overlay{
-      display:none;position:fixed;inset:0;
-      background:rgba(0,0,0,.6);z-index:19999;
-      backdrop-filter:blur(2px);
-    }
-    .mobile-overlay.open{display:block;}
-
-    @media(max-width:768px){
-      .hamburger-btn{display:block;}
-      .header-controls .auth-controls{display:none;}
-      .header-controls .sound-btn{display:none;}
-    }
-    .auth-user-email{font-family:'Press Start 2P',monospace;font-size:6px;color:#00ffff;text-shadow:0 0 8px #00ffff;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .btn-pixel{font-family:'Press Start 2P',monospace;font-size:7px;padding:7px 10px;border:2px solid currentColor;background:transparent;cursor:pointer;letter-spacing:1px;transition:background .15s,box-shadow .15s;}
-    .btn-pixel:hover{opacity:.85;}
-    .btn-login{color:#00ffff;border-color:#00ffff;}
-    .btn-login:hover{background:#00ffff22;box-shadow:0 0 10px #00ffff88;}
-    .btn-register{color:#ff00ff;border-color:#ff00ff;}
-    .btn-register:hover{background:#ff00ff22;box-shadow:0 0 10px #ff00ff88;}
-    .btn-logout{color:#ff6666;border-color:#ff6666;font-size:6px;}
-    .btn-logout:hover{background:#ff666622;box-shadow:0 0 8px #ff666688;}
-    .btn-leaderboard{color:#ffff00;border-color:#ffff00;}
-    .btn-leaderboard:hover{background:#ffff0022;box-shadow:0 0 10px #ffff0088;}
-    .ph-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-    .ph-modal-overlay.active{display:flex;}
-    .ph-modal{background:#0a0a1a;border:2px solid #00ffff;box-shadow:0 0 30px #00ffff55,0 0 60px #ff00ff22;padding:32px 28px;width:90%;max-width:380px;position:relative;animation:zoomIn .25s ease;}
-    .ph-modal.leaderboard-modal{max-width:480px;border-color:#ffff00;box-shadow:0 0 30px #ffff0055,0 0 60px #ff00ff22;}
-    .ph-modal-close{position:absolute;top:10px;right:14px;background:none;border:none;color:#ff00ff;font-size:18px;cursor:pointer;line-height:1;}
-    .ph-modal-close:hover{color:#fff;}
-    .ph-modal-title{font-family:'Press Start 2P',monospace;font-size:12px;color:#00ffff;text-shadow:0 0 10px #00ffff;margin:0 0 20px 0;text-align:center;letter-spacing:2px;}
-    .leaderboard-modal .ph-modal-title{color:#ffff00;text-shadow:0 0 10px #ffff00;}
-    .auth-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #222;}
-    .auth-tab{flex:1;padding:8px 0;font-family:'Press Start 2P',monospace;font-size:8px;background:none;border:none;color:#555;cursor:pointer;letter-spacing:1px;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s;}
-    .auth-tab.active{color:#00ffff;border-bottom-color:#00ffff;}
-    .auth-form{display:none;}
-    .auth-form.active{display:block;}
-    .auth-field{margin-bottom:14px;}
-    .auth-field label{display:block;font-family:'Press Start 2P',monospace;font-size:7px;color:#aaa;margin-bottom:5px;letter-spacing:1px;}
-    .auth-field input{width:100%;padding:9px 10px;background:#111;border:1px solid #333;color:#eee;font-family:'Press Start 2P',monospace;font-size:8px;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;}
-    .auth-field input:focus{border-color:#00ffff;box-shadow:0 0 8px #00ffff44;}
-    .auth-submit{width:100%;padding:10px;font-family:'Press Start 2P',monospace;font-size:9px;background:#00ffff11;border:2px solid #00ffff;color:#00ffff;cursor:pointer;letter-spacing:2px;margin-top:6px;text-shadow:0 0 8px #00ffff;transition:background .15s,box-shadow .15s;}
-    .auth-submit:hover{background:#00ffff22;box-shadow:0 0 14px #00ffff77;}
-    .auth-submit:disabled{opacity:.5;cursor:not-allowed;}
-    .auth-msg{font-family:'Press Start 2P',monospace;font-size:7px;margin-top:10px;text-align:center;min-height:16px;letter-spacing:1px;}
-    .auth-msg.error{color:#ff4444;}
-    .auth-msg.success{color:#00ff88;}
-    .lb-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;justify-content:center;}
-    .lb-filter-btn{font-family:'Press Start 2P',monospace;font-size:6px;padding:5px 8px;background:transparent;border:1px solid #444;color:#888;cursor:pointer;letter-spacing:1px;transition:all .15s;}
-    .lb-filter-btn.active,.lb-filter-btn:hover{border-color:#ffff00;color:#ffff00;box-shadow:0 0 6px #ffff0066;}
-    .lb-table-wrap{max-height:320px;overflow-y:auto;}
-    .lb-table-wrap::-webkit-scrollbar{width:4px;}
-    .lb-table-wrap::-webkit-scrollbar-thumb{background:#00ffff44;}
-    .lb-table{width:100%;border-collapse:collapse;font-family:'Press Start 2P',monospace;font-size:7px;}
-    .lb-table th{color:#ffff00;padding:6px 8px;text-align:left;border-bottom:1px solid #333;letter-spacing:1px;position:sticky;top:0;background:#0a0a1a;}
-    .lb-table td{padding:7px 8px;border-bottom:1px solid #1a1a2e;color:#ccc;letter-spacing:1px;}
-    .lb-table tr:hover td{background:#ffffff08;}
-    .lb-rank-1 td{color:#ffff00;text-shadow:0 0 6px #ffff00;}
-    .lb-rank-2 td{color:#00ffff;text-shadow:0 0 6px #00ffff;}
-    .lb-rank-3 td{color:#ff00ff;text-shadow:0 0 6px #ff00ff;}
-    .lb-empty{font-family:'Press Start 2P',monospace;font-size:8px;color:#555;text-align:center;padding:30px 0;}
-    .lb-loading{font-family:'Press Start 2P',monospace;font-size:7px;color:#00ffff;text-align:center;padding:20px 0;animation:blink 1s step-end infinite;}
-    @keyframes blink{50%{opacity:0;}}
+    .pong-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px; }
+    #pong-canvas { image-rendering:pixelated; }
+    .pong-controls-mobile { display:flex; gap:20px; margin-top:10px; }
+    .pong-btn { width:80px; height:60px; background:rgba(255,255,0,0.1); border:2px solid rgba(255,255,0,0.4); color:#ffd54f; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; border-radius:0; -webkit-user-select:none; }
+    .pong-btn:active { background:rgba(255,255,0,0.3); }
+    @media(min-width:600px){ .pong-controls-mobile{display:none;} }
+    .pong-scores { display:flex; gap:40px; align-items:center; }
+    .pong-score-num { font-family:'Fredoka One',cursive; font-size:32px; }
+    .p1-score { color:#81d4fa; text-shadow:0 0 15px #00ffff; }
+    .p2-score { color:#f8bbd0; text-shadow:0 0 15px #ff00ff; }
+    .pong-vs { font-family:'Fredoka One',cursive; font-size:12px; color:rgba(255,255,255,0.35); }
+    .speed-btns { display:flex; gap:10px; justify-content:center; }
+    .speed-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
+    .speed-btn.active { border-color:#ffd54f; color:#ffd54f; box-shadow:0 0 8px rgba(255,255,0,0.3); }
   </style>
 </head>
-<body>
+<body data-game="pong">
+<div id="pixel-bg"><div class="grid-overlay"></div><div class="scanlines"></div></div>
+<div id="app" class="game-page">
+  <nav class="game-nav">
+    <a href="../index.html" class="back-btn">← BACK</a>
+    <span class="game-title-nav">🏓 PONG</span>
+    <button class="sound-btn" id="sound-toggle">🔊</button>
+  </nav>
 
-<!-- PIXEL BACKGROUND -->
-<div id="pixel-bg">
-  <div class="grid-overlay"></div>
-  <div class="scanlines"></div>
-</div>
-
-<!-- LOADING SCREEN -->
-<div id="loading-screen">
-  <div class="loading-logo glitch-text">SKYWORLD</div>
-  <div style="font-family:'Baloo 2',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:3px;margin-bottom:10px;">LOADING SKYWORLD...</div>
-  <div class="loading-bar-container">
-    <div class="loading-bar" id="loading-bar"></div>
-  </div>
-  <div class="loading-text" id="loading-text">INITIALIZING...</div>
-  <div class="loading-dots" style="margin-top:10px;">
-    <span></span><span></span><span></span>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none;">
-
-  <!-- HEADER -->
-  <header class="site-header">
-    <a href="index.html" class="logo-wrap">
-      <div class="logo-icon">
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
+  <div id="screen-start" class="game-screen" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1>🏓 PONG</h1>
+    <p>Classic arcade paddle game! First to <strong style="color:#ffd54f">7 points</strong> wins.<br>Use W/S or ↑/↓ keys. Touch/drag on mobile.</p>
+    <div style="margin:20px 0;">
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">AI SPEED:</div>
+      <div class="speed-btns">
+        <button class="speed-btn active" data-speed="0.04">EASY</button>
+        <button class="speed-btn" data-speed="0.07">MEDIUM</button>
+        <button class="speed-btn" data-speed="0.1">HARD</button>
       </div>
-      <span class="logo-text">SKYWORLD</span>
-    </a>
-    <div class="header-controls">
-      <!-- SUPABASE AUTH CONTROLS (desktop) -->
-      <div class="auth-controls" id="auth-controls">
-        <button class="btn-pixel btn-leaderboard" id="btn-open-leaderboard">🏆 LEADERBOARD</button>
-        <span id="auth-logged-out" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn-pixel btn-login"    id="btn-open-login">LOGIN</button>
-          <button class="btn-pixel btn-register" id="btn-open-register">REGISTER</button>
-        </span>
-        <span id="auth-logged-in" style="display:none;gap:6px;align-items:center;">
-          <span class="auth-user-email" id="auth-email-display"></span>
-          <button class="btn-pixel btn-logout" id="btn-logout">LOGOUT</button>
-        </span>
+    </div>
+    <button class="pixel-btn btn-yellow" onclick="startPong()"><span class="btn-span">▶ START GAME</span></button>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div class="pong-wrap">
+      <div class="pong-scores">
+        <span class="pong-score-num p1-score" id="p1-score">0</span>
+        <span class="pong-vs">VS</span>
+        <span class="pong-score-num p2-score" id="p2-score">0</span>
       </div>
-      <!-- END AUTH CONTROLS -->
-      <button class="sound-btn" id="sound-toggle" title="Toggle Sound">🔊</button>
-      <!-- HAMBURGER (mobile only) -->
-      <button class="hamburger-btn" id="hamburger-btn" title="Menu">&#9776;</button>
-    </div>
-  </header>
-
-  <!-- MOBILE MENU OVERLAY -->
-  <div class="mobile-overlay" id="mobile-overlay"></div>
-
-  <!-- MOBILE MENU DRAWER -->
-  <div class="mobile-menu" id="mobile-menu">
-    <div class="mobile-menu-header">
-      <span class="mobile-menu-title">&#x1F579;&#xFE0F; MENU</span>
-      <button class="mobile-menu-close" id="mobile-menu-close">&#x2715;</button>
-    </div>
-
-    <!-- logged out state -->
-    <div id="mob-logged-out">
-      <button class="btn-pixel btn-login" id="mob-btn-login" style="width:100%;text-align:center;padding:12px;font-size:8px;margin-bottom:8px;">LOGIN</button>
-      <button class="btn-pixel btn-register" id="mob-btn-register" style="width:100%;text-align:center;padding:12px;font-size:8px;">REGISTER</button>
-    </div>
-
-    <!-- logged in state -->
-    <div id="mob-logged-in" style="display:none;">
-      <div class="auth-user-email" id="mob-email-display" style="text-align:center;width:100%;font-size:7px;padding:10px 0;border-bottom:1px solid #222;margin-bottom:8px;display:block;"></div>
-      <button class="btn-pixel btn-logout" id="mob-btn-logout" style="width:100%;text-align:center;padding:12px;font-size:8px;">LOGOUT</button>
-    </div>
-
-    <div class="mobile-menu-divider"></div>
-
-    <button class="btn-pixel btn-leaderboard" id="mob-btn-leaderboard" style="width:100%;text-align:center;padding:12px;font-size:8px;">&#x1F3C6; LEADERBOARD</button>
-
-    <div class="mobile-menu-divider"></div>
-
-    <div class="mobile-menu-sound">
-      <span>SOUND</span>
-      <button class="sound-btn" id="mob-sound-toggle">&#x1F50A;</button>
+      <div style="display:flex;gap:40px;font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.6);">
+        <span style="color:#81d4fa">YOU</span>
+        <span style="color:#f8bbd0">AI</span>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="pong-canvas"></canvas>
+      </div>
+      <div class="pong-controls-mobile">
+        <button class="pong-btn" id="btn-up">▲</button>
+        <button class="pong-btn" id="btn-down">▼</button>
+      </div>
+      <div style="font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px;" id="pong-hint">W/S OR ↑/↓ TO MOVE</div>
     </div>
   </div>
 
-  <!-- TICKER -->
-  <div class="ticker-wrap">
-    <div class="ticker" id="ticker">
-      <span class="ticker-item">TIC-TAC-TOE</span>
-      <span class="ticker-item">MEMORY CARDS</span>
-      <span class="ticker-item">SNAKE</span>
-      <span class="ticker-item">PONG</span>
-      <span class="ticker-item">WORD SCRAMBLE</span>
-      <span class="ticker-item">TYPING SPEED</span>
-      <span class="ticker-item">MATH QUIZ</span>
-      <span class="ticker-item">CLICKER GAME</span>
-      <span class="ticker-item">BREAKOUT</span>
-      <span class="ticker-item">BLOCK BLAST</span>
-      <span class="ticker-item">ADVENTURE AWAITS</span>
-      <span class="ticker-item">TIC-TAC-TOE</span>
-      <span class="ticker-item">MEMORY CARDS</span>
-      <span class="ticker-item">SNAKE</span>
-      <span class="ticker-item">PONG</span>
-      <span class="ticker-item">WORD SCRAMBLE</span>
-      <span class="ticker-item">TYPING SPEED</span>
-      <span class="ticker-item">MATH QUIZ</span>
-      <span class="ticker-item">CLICKER GAME</span>
-      <span class="ticker-item">BREAKOUT</span>
-      <span class="ticker-item">BLOCK BLAST</span>
-      <span class="ticker-item">ADVENTURE AWAITS</span>
-    </div>
-  </div>
-
-  <!-- HERO -->
-  <section class="hero">
-    <h1 class="hero-title">PIXEL<span class="neon-magenta">HUB</span></h1>
-    <p class="hero-subtitle">▶ SKY ADVENTURE AWAITS ◀</p>
-    <div class="hero-stats">
-      <div class="stat-item"><span class="stat-num">10</span><span class="stat-label">GAMES</span></div>
-      <div class="stat-item"><span class="stat-num">FREE</span><span class="stat-label">TO PLAY</span></div>
-      <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">BROWSER</span></div>
-    </div>
-  </section>
-
-  <!-- GAMES SECTION -->
-  <div class="section-header">
-    <h2 class="section-title">SELECT GAME</h2>
-  </div>
-
-  <!-- GAME GRID -->
-  <main class="games-grid">
-    <a href="games/tic-tac-toe.html" class="game-card card-ttt" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#1</div><div class="card-thumbnail">⭕</div>
-      <div class="card-body">
-        <h3 class="card-title">TIC-TAC-TOE</h3>
-        <p class="card-desc">Classic X vs O battle. Play against unbeatable AI or challenge a friend!</p>
-        <div class="card-tags"><span class="tag tag-puzzle">PUZZLE</span><span class="tag tag-strategy">2 MODES</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/memory.html" class="game-card card-memory" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#2</div><div class="card-thumbnail">🃏</div>
-      <div class="card-body">
-        <h3 class="card-title">MEMORY CARDS</h3>
-        <p class="card-desc">Flip and match cards. Test your memory and beat the clock!</p>
-        <div class="card-tags"><span class="tag tag-puzzle">MEMORY</span><span class="tag tag-arcade">TIMED</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/snake.html" class="game-card card-snake" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#3</div><div class="card-thumbnail">🐍</div>
-      <div class="card-body">
-        <h3 class="card-title">SNAKE</h3>
-        <p class="card-desc">Grow your snake, eat food, avoid walls and your own tail!</p>
-        <div class="card-tags"><span class="tag tag-arcade">ARCADE</span><span class="tag tag-action">CLASSIC</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/pong.html" class="game-card card-pong" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#4</div><div class="card-thumbnail">🏓</div>
-      <div class="card-body">
-        <h3 class="card-title">PONG</h3>
-        <p class="card-desc">The original arcade classic. Rally against AI in this retro paddle battle!</p>
-        <div class="card-tags"><span class="tag tag-arcade">ARCADE</span><span class="tag tag-action">VS AI</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/word-scramble.html" class="game-card card-word" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#5</div><div class="card-thumbnail">🔤</div>
-      <div class="card-body">
-        <h3 class="card-title">WORD SCRAMBLE</h3>
-        <p class="card-desc">Unscramble letters to form the correct word. Race against time!</p>
-        <div class="card-tags"><span class="tag tag-puzzle">WORD</span><span class="tag tag-arcade">TIMED</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/typing-game.html" class="game-card card-typing" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#6</div><div class="card-thumbnail">⌨️</div>
-      <div class="card-body">
-        <h3 class="card-title">TYPING SPEED</h3>
-        <p class="card-desc">How fast can you type? Measure your WPM and accuracy!</p>
-        <div class="card-tags"><span class="tag tag-typing">TYPING</span><span class="tag tag-arcade">SPEED</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/math-quiz.html" class="game-card card-math" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#7</div><div class="card-thumbnail">🔢</div>
-      <div class="card-body">
-        <h3 class="card-title">MATH QUIZ</h3>
-        <p class="card-desc">Quick arithmetic! Answer math questions as fast as you can!</p>
-        <div class="card-tags"><span class="tag tag-puzzle">MATH</span><span class="tag tag-arcade">TIMED</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/clicker.html" class="game-card card-clicker" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#8</div><div class="card-thumbnail">👆</div>
-      <div class="card-body">
-        <h3 class="card-title">CLICKER GAME</h3>
-        <p class="card-desc">Click, upgrade, and build your pixel empire! Idle clicker madness!</p>
-        <div class="card-tags"><span class="tag tag-action">CLICKER</span><span class="tag tag-arcade">IDLE</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/breakout.html" class="game-card card-breakout" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#9</div><div class="card-thumbnail">🧱</div>
-      <div class="card-body">
-        <h3 class="card-title">BREAKOUT</h3>
-        <p class="card-desc">Break all the bricks with your paddle and ball. Classic arcade action!</p>
-        <div class="card-tags"><span class="tag tag-arcade">ARCADE</span><span class="tag tag-action">ACTION</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-    <a href="games/block-blast.html" class="game-card card-snake" data-sound="click">
-      <div class="card-corner tl"></div><div class="card-corner tr"></div>
-      <div class="card-corner bl"></div><div class="card-corner br"></div>
-      <div class="card-rank">#10</div><div class="card-thumbnail">💥</div>
-      <div class="card-body">
-        <h3 class="card-title">BLOCK BLAST</h3>
-        <p class="card-desc">Place blocks, clear lines, chain combos! Strategic pixel blasting action!</p>
-        <div class="card-tags"><span class="tag tag-puzzle">PUZZLE</span><span class="tag tag-strategy">STRATEGY</span></div>
-        <div class="play-btn"><span>▶ PLAY NOW</span></div>
-      </div>
-    </a>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <p>
-      <span class="neon-text">SKYWORLD</span> &nbsp;|&nbsp;
-      SKY ADVENTURE GAMES &nbsp;|&nbsp;
-      MADE WITH 🌿 AND SKY
-    </p>
-    <p style="margin-top:8px;font-size:7px;color:#444;">
-      PURE HTML/CSS/JS &nbsp;&middot;&nbsp; INSTANT PLAY
-    </p>
-  </footer>
-
-</div><!-- /#app -->
-
-<!-- =============================================
-     SUPABASE AUTH MODAL
-     ============================================= -->
-<div class="ph-modal-overlay" id="auth-modal">
-  <div class="ph-modal">
-    <button class="ph-modal-close" id="auth-modal-close">✕</button>
-    <h2 class="ph-modal-title">🕹️ PLAYER LOGIN</h2>
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="login">LOGIN</button>
-      <button class="auth-tab"        data-tab="register">REGISTER</button>
-    </div>
-    <!-- LOGIN FORM -->
-    <div class="auth-form active" id="auth-form-login">
-      <div class="auth-field">
-        <label>EMAIL</label>
-        <input type="email" id="login-email" placeholder="player@arcade.com" autocomplete="email">
-      </div>
-      <div class="auth-field">
-        <label>PASSWORD</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <button class="auth-submit" id="btn-login-submit">▶ LOGIN</button>
-      <div class="auth-msg" id="login-msg"></div>
-    </div>
-    <!-- REGISTER FORM -->
-    <div class="auth-form" id="auth-form-register">
-      <div class="auth-field">
-        <label>EMAIL</label>
-        <input type="email" id="reg-email" placeholder="player@arcade.com" autocomplete="email">
-      </div>
-      <div class="auth-field">
-        <label>PASSWORD <span style="color:#555;font-size:6px">(MIN 6 CHARS)</span></label>
-        <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
-      </div>
-      <button class="auth-submit" id="btn-register-submit">▶ CREATE ACCOUNT</button>
-      <div class="auth-msg" id="reg-msg"></div>
+  <div id="screen-end" class="game-screen hidden" style="position:relative;max-width:440px;margin:40px auto;">
+    <h1 id="end-title">🏆 YOU WIN!</h1>
+    <span class="final-score" id="end-score">7 - 0</span>
+    <p id="end-msg"></p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+      <button class="pixel-btn btn-yellow" onclick="startPong()"><span class="btn-span">▶ PLAY AGAIN</span></button>
+      <a href="../index.html" class="pixel-btn btn-cyan"><span class="btn-span">◀ MENU</span></a>
     </div>
   </div>
 </div>
-
-<!-- =============================================
-     SUPABASE LEADERBOARD MODAL
-     ============================================= -->
-<div class="ph-modal-overlay" id="leaderboard-modal">
-  <div class="ph-modal leaderboard-modal">
-    <button class="ph-modal-close" id="lb-modal-close">✕</button>
-    <h2 class="ph-modal-title">🏆 GLOBAL LEADERBOARD</h2>
-    <div class="lb-filter" id="lb-filter">
-      <button class="lb-filter-btn active" data-game="all">ALL</button>
-      <button class="lb-filter-btn" data-game="snake">SNAKE</button>
-      <button class="lb-filter-btn" data-game="breakout">BREAKOUT</button>
-      <button class="lb-filter-btn" data-game="memory">MEMORY</button>
-      <button class="lb-filter-btn" data-game="math-quiz">MATH</button>
-      <button class="lb-filter-btn" data-game="typing-game">TYPING</button>
-      <button class="lb-filter-btn" data-game="word-scramble">WORD</button>
-      <button class="lb-filter-btn" data-game="clicker">CLICKER</button>
-      <button class="lb-filter-btn" data-game="pong">PONG</button>
-      <button class="lb-filter-btn" data-game="block-blast">BLOCKS</button>
-    </div>
-    <div class="lb-table-wrap" id="lb-table-wrap">
-      <div class="lb-loading" id="lb-loading">LOADING SCORES...</div>
-    </div>
-  </div>
-</div>
-
-<!-- AUDIO -->
-<audio id="bg-music" loop><source src="assets/music/arcade.mp3" type="audio/mpeg"></audio>
-<audio id="sfx-click" src="assets/sounds/click.mp3" preload="auto"></audio>
-<audio id="sfx-win"   src="assets/sounds/win.mp3"   preload="auto"></audio>
-<audio id="sfx-lose"  src="assets/sounds/lose.mp3"  preload="auto"></audio>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/games.js"></script>
-<script src="js/main.js"></script>
+<script src="../js/games.js"></script>
+<script src="../js/main.js"></script>
+
+<script>
+const CW=Math.min(500,window.innerWidth-40), CH=Math.round(CW*0.6);
+const PAD_W=12, PAD_H=80, BALL_S=10, WIN_SCORE=7;
+let canvas, ctx, gloop;
+let p1y, p2y, bx, by, bdx, bdy, p1s, p2s, keys={}, aiSpeed=0.04;
+let particles=[];
+
+function startPong(){
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-end').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  
+  aiSpeed=parseFloat(document.querySelector('.speed-btn.active').dataset.speed);
+  canvas=document.getElementById('pong-canvas');
+  canvas.width=CW; canvas.height=CH;
+  ctx=canvas.getContext('2d');
+  
+  p1y=CH/2-PAD_H/2; p2y=CH/2-PAD_H/2;
+  p1s=0; p2s=0;
+  document.getElementById('p1-score').textContent=0;
+  document.getElementById('p2-score').textContent=0;
+  resetBall();
+  
+  clearInterval(gloop);
+  gloop=setInterval(update,16);
+  PH.playClick&&PH.playClick();
+}
+
+function resetBall(){
+  bx=CW/2; by=CH/2;
+  const angle=(Math.random()*60-30)*(Math.PI/180);
+  const speed=CW*0.008;
+  bdx=(Math.random()>0.5?1:-1)*speed*Math.cos(angle);
+  bdy=speed*Math.sin(angle);
+}
+
+function update(){
+  // Input
+  const spd=CH*0.015;
+  if(keys['w']||keys['arrowup']) p1y=Math.max(0,p1y-spd);
+  if(keys['s']||keys['arrowdown']) p1y=Math.min(CH-PAD_H,p1y+spd);
+  
+  // AI
+  const aiTarget=by-PAD_H/2;
+  const diff=aiTarget-p2y;
+  p2y+=Math.min(Math.abs(diff),Math.abs(bdx)*aiSpeed*CH)*Math.sign(diff);
+  p2y=Math.max(0,Math.min(CH-PAD_H,p2y));
+  
+  // Ball
+  bx+=bdx; by+=bdy;
+  
+  // Walls
+  if(by<=BALL_S/2||by>=CH-BALL_S/2){ bdy=-bdy; PH.playBeep&&PH.playBeep(330,0.06,'square',0.08); }
+  
+  // Paddle collision P1
+  if(bx-BALL_S/2<=PAD_W+16&&by>=p1y&&by<=p1y+PAD_H&&bdx<0){
+    bdx=Math.abs(bdx)*1.05;
+    const rel=(by-(p1y+PAD_H/2))/(PAD_H/2);
+    bdy=rel*CW*0.01;
+    particles.push(...genParticles(bx,by,'#00ffff'));
+    PH.playBeep&&PH.playBeep(660,0.08,'sine',0.12);
+  }
+  // Paddle collision P2
+  if(bx+BALL_S/2>=CW-PAD_W-16&&by>=p2y&&by<=p2y+PAD_H&&bdx>0){
+    bdx=-Math.abs(bdx)*1.05;
+    const rel=(by-(p2y+PAD_H/2))/(PAD_H/2);
+    bdy=rel*CW*0.01;
+    particles.push(...genParticles(bx,by,'#ff00ff'));
+    PH.playBeep&&PH.playBeep(440,0.08,'sine',0.12);
+  }
+  
+  // Scoring
+  if(bx<0){ p2s++; document.getElementById('p2-score').textContent=p2s; PH.playBeep&&PH.playBeep(200,0.2,'sawtooth',0.12); resetBall(); }
+  if(bx>CW){ p1s++; document.getElementById('p1-score').textContent=p1s; PH.playBeep&&PH.playBeep(880,0.2,'sine',0.12); resetBall(); }
+  
+  if(p1s>=WIN_SCORE||p2s>=WIN_SCORE){ clearInterval(gloop); setTimeout(endPong,400); }
+  
+  // Particles
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; p.vx*=0.9; p.vy*=0.9; });
+  
+  draw();
+}
+
+function genParticles(x,y,color){
+  return Array.from({length:6},()=>{
+    const a=Math.random()*Math.PI*2, s=1+Math.random()*3;
+    return {x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:15,color};
+  });
+}
+
+function draw(){
+  ctx.fillStyle='#050010'; ctx.fillRect(0,0,CW,CH);
+  
+  // Center line
+  ctx.setLineDash([10,10]);
+  ctx.strokeStyle='rgba(255,255,255,0.08)';
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(CW/2,0); ctx.lineTo(CW/2,CH); ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // P1 paddle
+  ctx.shadowColor='#00ffff'; ctx.shadowBlur=15;
+  ctx.fillStyle='#00ffff';
+  ctx.fillRect(16,p1y,PAD_W,PAD_H);
+  
+  // P2 paddle
+  ctx.shadowColor='#ff00ff'; ctx.shadowBlur=15;
+  ctx.fillStyle='#ff00ff';
+  ctx.fillRect(CW-PAD_W-16,p2y,PAD_W,PAD_H);
+  
+  // Ball
+  const pulse=Math.sin(Date.now()/80)*3;
+  ctx.shadowColor='#ffff00'; ctx.shadowBlur=20+pulse;
+  ctx.fillStyle='#ffff00';
+  ctx.fillRect(bx-BALL_S/2,by-BALL_S/2,BALL_S,BALL_S);
+  ctx.shadowBlur=0;
+  
+  // Particles
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life/15;
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x-3,p.y-3,6,6);
+  });
+  ctx.globalAlpha=1;
+}
+
+function endPong(){
+  const win=p1s>=WIN_SCORE;
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-end').classList.remove('hidden');
+  document.getElementById('end-title').textContent=win?'🏆 YOU WIN!':'💀 AI WINS!';
+  document.getElementById('end-score').textContent=p1s+' - '+p2s;
+  document.getElementById('end-msg').textContent=win?'Excellent rally! You defeated the AI!':'Better luck next time!';
+  if(win){ PH.playWin&&PH.playWin(); PH.confetti&&PH.confetti(); PH.setHighScore&&PH.setHighScore('pong', p1s); }
+  else { PH.playLose&&PH.playLose(); }
+}
+
+document.addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(['arrowup','arrowdown'].includes(e.key.toLowerCase())) e.preventDefault();
+});
+document.addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+
+// Mobile touch
+document.getElementById('btn-up')?.addEventListener('touchstart',()=>keys['arrowup']=true,{passive:true});
+document.getElementById('btn-up')?.addEventListener('touchend',()=>keys['arrowup']=false,{passive:true});
+document.getElementById('btn-down')?.addEventListener('touchstart',()=>keys['arrowdown']=true,{passive:true});
+document.getElementById('btn-down')?.addEventListener('touchend',()=>keys['arrowdown']=false,{passive:true});
+
+document.querySelectorAll('.speed-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{ document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); PH.playClick&&PH.playClick(); });
+});
+</script>
 </body>
 </html>
