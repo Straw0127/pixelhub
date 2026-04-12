@@ -1,6 +1,6 @@
 // UPDATED — MERGED v2 (original 10 + 13 new games)
 // ========================================
-// PIXELHUB - GAMES.JS
+// SKYWORLD - GAMES.JS
 // Shared Game Logic, Score, Timer, Utils
 // + Supabase Score Saving (all 23 games)
 // ========================================
@@ -83,9 +83,9 @@
         // user_id auto-set by Supabase RLS via auth.uid()
       }]);
 
-      if (error) console.warn('[PixelHub] Score save error:', error.message);
+      if (error) console.warn('[SkyWorld] Score save error:', error.message);
     } catch (e) {
-      console.warn('[PixelHub] Score save failed:', e);
+      console.warn('[SkyWorld] Score save failed:', e);
     }
   };
 

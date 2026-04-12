@@ -1,6 +1,6 @@
 // UPDATED — MERGED v2 (original 10 + 13 new games)
 // ========================================
-// PIXELHUB - MAIN.JS
+// SKYWORLD - MAIN.JS
 // UI Animations, Music Toggle, Navigation
 // + Supabase Auth, Leaderboard (all 23 games)
 // + Mobile hamburger menu (null-safe)
@@ -516,7 +516,7 @@
     const mobSound    = document.getElementById('mob-sound-toggle');
 
     if (!hamburger || !menu) return;
-    if (!overlay) { console.warn('[PixelHub] mobile-overlay not found'); }
+    if (!overlay) { console.warn('[SkyWorld] mobile-overlay not found'); }
 
     function openMenu() {
       menu.classList.add('open');
