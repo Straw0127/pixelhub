@@ -10,13 +10,13 @@
   <style>
     .breakout-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
     .breakout-hud{display:flex;gap:24px;font-family:'Fredoka One',cursive;font-size:10px}
-    .hud-item span{display:block;font-size:18px;color:var(--neon-cyan);text-shadow:0 0 10px var(--neon-cyan);text-align:center}
+    .hud-item span{display:block;font-size:18px;color:#81d4fa;text-shadow:0 2px 8px rgba(129,212,250,0.4);text-align:center}
     .hud-item label{display:block;color:rgba(255,255,255,0.6);font-size:8px;margin-top:2px;text-align:center}
     #breakout-canvas{image-rendering:pixelated;touch-action:none;cursor:none}
     .mobile-note{font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.38);text-align:center}
     @media(min-width:600px){.mobile-note{display:none}}
     .lives-row{display:flex;gap:6px;align-items:center}
-    .life-pip{width:10px;height:10px;background:var(--neon-magenta);box-shadow:0 0 8px var(--neon-magenta)}
+    .life-pip{width:10px;height:10px;background:#f8bbd0;box-shadow:0 2px 6px rgba(248,187,208,0.5);border-radius:50%}
   </style>
 </head>
 <body data-game="breakout">
@@ -78,7 +78,7 @@ let canvas,ctx,paddle,ball,bricks,score,lives,level,gameRunning,animFrame,waitBa
 
 const BRICK_COLORS=[
   ['#ff0066','#ff4499'],['#ff6600','#ff9944'],['#ffff00','#ffff66'],
-  ['#00ff88','#66ffaa'],['#00ffff','#66ffff'],['#ff00ff','#ff66ff']
+  ['#66bb6a','#a5d6a7'],['#29b6f6','#81d4fa'],['#ec407a','#f8bbd0']
 ];
 
 function initCanvas(){
@@ -207,9 +207,9 @@ function nextLevel(){
 }
 
 function draw(){
-  ctx.fillStyle='#060010';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='rgba(21,101,192,0.6)';ctx.fillRect(0,0,CW,CH);
   // Grid
-  ctx.strokeStyle='rgba(0,255,255,0.03)';ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
   for(let x=0;x<CW;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CH);ctx.stroke();}
   for(let y=0;y<CH;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(CW,y);ctx.stroke();}
 
@@ -231,14 +231,14 @@ function draw(){
   // Paddle
   const pg=ctx.createLinearGradient(paddle.x,paddle.y,paddle.x,paddle.y+paddle.h);
   pg.addColorStop(0,'#ff88cc');pg.addColorStop(1,'#ff00ff');
-  ctx.fillStyle=pg;ctx.shadowColor='#ff00ff';ctx.shadowBlur=15;
+  ctx.fillStyle=pg;ctx.shadowColor='#f8bbd0';ctx.shadowBlur=12;
   ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
   ctx.shadowBlur=0;
 
   // Ball
   const bg2=ctx.createRadialGradient(ball.x-2,ball.y-2,1,ball.x,ball.y,ball.r);
-  bg2.addColorStop(0,'#ffffff');bg2.addColorStop(0.4,'#00ffff');bg2.addColorStop(1,'#006688');
-  ctx.fillStyle=bg2;ctx.shadowColor='#00ffff';ctx.shadowBlur=20;
+  bg2.addColorStop(0,'#ffffff');bg2.addColorStop(0.4,'#81d4fa');bg2.addColorStop(1,'#1565c0');
+  ctx.fillStyle=bg2;ctx.shadowColor='#ffd54f';ctx.shadowBlur=16;
   ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
   ctx.shadowBlur=0;
 
@@ -253,7 +253,7 @@ function draw(){
 
   // Wait ball hint
   if(waitBall){
-    ctx.fillStyle='rgba(0,255,255,0.7)';ctx.font='bold 11px monospace';
+    ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold 11px monospace';
     ctx.textAlign='center';ctx.fillText('CLICK / TAP TO LAUNCH',CW/2,CH/2+40);
   }
 }

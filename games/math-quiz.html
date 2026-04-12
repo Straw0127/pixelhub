@@ -15,23 +15,23 @@
     @keyframes shake2 { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
     .answer-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
     .answer-opt { font-family:'Fredoka One',cursive; font-size:clamp(14px,3vw,20px); padding:20px; border:2px solid rgba(255,255,255,0.28); background:rgba(21,101,192,0.2); color:#ffd54f; cursor:pointer; text-align:center; transition:all 0.2s; }
-    .answer-opt:hover:not(:disabled) { border-color:#ffd54f; background:rgba(255,255,0,0.1); box-shadow:0 0 15px rgba(255,255,0,0.3); transform:scale(1.03); }
+    .answer-opt:hover:not(:disabled) { border-color:#ffd54f; background:rgba(255,213,79,0.12); box-shadow:0 4px 16px rgba(0,0,0,0.15); transform:scale(1.03); }
     .answer-opt.correct { border-color:#a5d6a7 !important; background:rgba(0,255,136,0.2) !important; color:#a5d6a7 !important; }
     .answer-opt.wrong { border-color:#ff4444 !important; background:rgba(255,68,68,0.2) !important; color:#ff4444 !important; }
     .answer-opt:disabled { cursor:default; }
     .math-stats { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; width:100%; }
-    .math-stat { text-align:center; padding:10px 16px; background:rgba(21,101,192,0.2); border:2px solid rgba(255,255,0,0.2); flex:1; min-width:80px; }
+    .math-stat { text-align:center; padding:10px 16px; background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.2); border-radius:10px; flex:1; min-width:80px; backdrop-filter:blur(4px); }
     .math-stat-num { font-family:'Fredoka One',cursive; font-size:20px; display:block; }
     .math-stat-label { font-size:8px; color:rgba(255,255,255,0.6); font-family:'Fredoka One',cursive; display:block; margin-top:3px; }
     .diff-math { display:flex; gap:10px; justify-content:center; }
-    .diff-math-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
-    .diff-math-btn.active { border-color:#ffd54f; color:#ffd54f; box-shadow:0 0 8px rgba(255,255,0,0.3); }
+    .diff-math-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.08); cursor:pointer; transition:all 0.2s; border-radius:20px; }
+    .diff-math-btn.active { border-color:#ffd54f; color:#ffd54f; background:rgba(255,213,79,0.1); box-shadow:0 2px 10px rgba(255,213,79,0.2); }
     .lives { display:flex; gap:8px; font-size:20px; }
-    .streak-bar { width:100%; height:6px; background:rgba(255,255,0,0.1); }
-    .streak-fill { height:100%; background:linear-gradient(90deg,#ffff00,#ff6600); transition:width 0.4s ease; box-shadow:0 0 8px #ffff00; }
+    .streak-bar { width:100%; height:6px; background:rgba(255,255,255,0.15); border-radius:3px; }
+    .streak-fill { height:100%; background:linear-gradient(90deg,#ffd54f,#ff9800); border-radius:3px; transition:width 0.4s ease; }
     #feedback-label { font-family:'Fredoka One',cursive; font-size:12px; min-height:20px; text-align:center; letter-spacing:2px; }
-    .math-input { background:rgba(21,101,192,0.2); border:2px solid rgba(255,255,0,0.4); color:#ffd54f; font-family:'Fredoka One',cursive; font-size:24px; padding:14px; text-align:center; width:100%; outline:none; transition:all 0.2s; }
-    .math-input:focus { border-color:#ffd54f; box-shadow:0 0 15px rgba(255,255,0,0.3); }
+    .math-input { background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.35); color:#ffd54f; font-family:'Fredoka One',cursive; font-size:24px; padding:14px; text-align:center; width:100%; outline:none; transition:all 0.2s; border-radius:10px; }
+    .math-input:focus { border-color:rgba(255,213,79,0.7); box-shadow:0 4px 18px rgba(0,0,0,0.15); background:rgba(255,255,255,0.2); }
   </style>
 </head>
 <body data-game="math-quiz">
@@ -200,7 +200,7 @@ function pickAnswer(val,btn){
     btn.classList.add('correct');
     document.getElementById('question-box').classList.add('correct-flash');
     document.getElementById('feedback-label').textContent='✓ CORRECT! +'+pts;
-    document.getElementById('feedback-label').style.color='#00ff88';
+    document.getElementById('feedback-label').style.color='#a5d6a7';
     PH.playMatch&&PH.playMatch();
   } else {
     lives--; streak=0; wrongCount++;

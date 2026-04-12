@@ -11,15 +11,15 @@
     .snake-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px; }
     #snake-canvas { image-rendering:pixelated; }
     .mobile-controls { display:grid; grid-template-areas:'. up .' 'left . right' '. down .'; gap:6px; margin-top:8px; }
-    .ctrl-btn { width:50px; height:50px; background:rgba(0,255,136,0.1); border:2px solid rgba(0,255,136,0.4); color:#a5d6a7; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
-    .ctrl-btn:active { background:rgba(0,255,136,0.3); box-shadow:0 0 15px rgba(0,255,136,0.4); }
+    .ctrl-btn { width:50px; height:50px; background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.3); color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.1s; border-radius:8px; }
+    .ctrl-btn:active { background:rgba(255,255,255,0.25); box-shadow:0 4px 16px rgba(0,0,0,0.2); }
     .ctrl-up { grid-area:up; }
     .ctrl-down { grid-area:down; }
     .ctrl-left { grid-area:left; }
     .ctrl-right { grid-area:right; }
     .snake-stats { display:flex; gap:20px; }
     .snake-stat { font-family:'Fredoka One',cursive; font-size:10px; text-align:center; }
-    .snake-stat-num { display:block; font-size:20px; color:#a5d6a7; text-shadow:0 0 10px #00ff88; }
+    .snake-stat-num { display:block; font-size:20px; color:#a5d6a7; text-shadow:0 2px 8px rgba(165,214,167,0.4); }
     .snake-stat span { color:rgba(255,255,255,0.6); display:block; margin-top:3px; }
     @media(min-width:600px){ .mobile-controls{display:none;} }
   </style>
@@ -145,7 +145,7 @@ function tick(){
   let ate=false;
   if(head.x===food.x&&head.y===food.y){
     score+=10*level; ate=true;
-    spawnParticles(head.x*CELL+CELL/2,head.y*CELL+CELL/2,'#00ff88');
+    spawnParticles(head.x*CELL+CELL/2,head.y*CELL+CELL/2,'#ffd54f');
     PH.playBeep&&PH.playBeep(660,0.1,'sine',0.1);
     placeFood();
     level=Math.floor(score/100)+1;
@@ -174,11 +174,11 @@ function spawnParticles(x,y,color){
 
 function draw(){
   // Background
-  ctx.fillStyle='#080015';
+  ctx.fillStyle='rgba(21,101,192,0.55)';
   ctx.fillRect(0,0,W,H);
   
   // Grid
-  ctx.strokeStyle='rgba(0,255,136,0.04)';
+  ctx.strokeStyle='rgba(255,255,255,0.06)';
   ctx.lineWidth=1;
   for(let i=0;i<=GRID;i++){
     ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,H); ctx.stroke();
@@ -190,7 +190,7 @@ function draw(){
     const t=i/snake.length;
     const r=0, g=Math.floor(200+55*(1-t)), b=Math.floor(100*(1-t));
     ctx.fillStyle=`rgb(${r},${g},${b})`;
-    ctx.shadowColor='#00ff88'; ctx.shadowBlur=i===0?15:6;
+    ctx.shadowColor='#66bb6a'; ctx.shadowBlur=i===0?12:4;
     ctx.fillRect(seg.x*CELL+1,seg.y*CELL+1,CELL-2,CELL-2);
     // Head detail
     if(i===0){

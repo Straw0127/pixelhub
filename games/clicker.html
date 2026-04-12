@@ -12,30 +12,30 @@
     .clicker-layout{display:flex;gap:16px;width:100%;flex-wrap:wrap;justify-content:center}
     .clicker-left{display:flex;flex-direction:column;align-items:center;gap:12px;flex:0 0 260px}
     .clicker-right{flex:1;min-width:220px}
-    #pixel-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00ffff,#004455,#000820);border:3px solid var(--neon-cyan);box-shadow:0 0 30px var(--neon-cyan),0 0 60px rgba(0,255,255,0.3),inset 0 0 40px rgba(0,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:70px;transition:transform 0.08s ease;position:relative;overflow:hidden;user-select:none}
+    #pixel-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#81d4fa,#1976d2,#0d47a1);border:3px solid rgba(255,255,255,0.7);box-shadow:0 6px 32px rgba(25,118,210,0.5),0 0 0 6px rgba(255,255,255,0.12),inset 0 0 30px rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:70px;transition:transform 0.08s ease,box-shadow 0.15s;position:relative;overflow:hidden;user-select:none}
     #pixel-orb:active{transform:scale(0.93)}
-    #pixel-orb:hover{box-shadow:0 0 40px var(--neon-cyan),0 0 80px rgba(0,255,255,0.4)}
-    .orb-inner{position:absolute;inset:0;background:radial-gradient(circle at 65% 65%,rgba(255,255,255,0.1),transparent 60%);border-radius:50%}
-    .cps-display{font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.6);text-align:center}
-    .pixels-count{font-family:'Fredoka One',cursive;font-size:18px;color:var(--neon-yellow);text-shadow:0 0 15px var(--neon-yellow);text-align:center}
-    .pixels-label{font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.6);margin-top:2px}
-    .upgrades-title{font-family:'Fredoka One',cursive;font-size:9px;color:var(--neon-green);text-shadow:0 0 8px var(--neon-green);margin-bottom:10px}
+    #pixel-orb:hover{box-shadow:0 8px 40px rgba(25,118,210,0.65),0 0 0 8px rgba(255,255,255,0.18),inset 0 0 40px rgba(255,255,255,0.2)}
+    .orb-inner{position:absolute;inset:0;background:radial-gradient(circle at 65% 65%,rgba(255,255,255,0.18),transparent 60%);border-radius:50%}
+    .cps-display{font-family:'Fredoka One',cursive;font-size:8px;color:rgba(255,255,255,0.75);text-align:center}
+    .pixels-count{font-family:'Fredoka One',cursive;font-size:18px;color:#ffd54f;text-shadow:0 2px 12px rgba(255,213,79,0.5);text-align:center}
+    .pixels-label{font-family:'Fredoka One',cursive;font-size:7px;color:rgba(255,255,255,0.65);margin-top:2px}
+    .upgrades-title{font-family:'Fredoka One',cursive;font-size:9px;color:#a5d6a7;letter-spacing:2px;margin-bottom:10px}
     .upgrade-list{display:flex;flex-direction:column;gap:8px}
-    .upgrade-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid rgba(0,255,136,0.3);background:rgba(0,30,20,0.6);cursor:pointer;transition:all 0.15s;text-align:left;width:100%;color:var(--text-primary);font-family:var(--font-mono)}
-    .upgrade-btn:hover:not(:disabled){border-color:var(--neon-green);background:rgba(0,255,136,0.08);box-shadow:0 0 10px rgba(0,255,136,0.2)}
+    .upgrade-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);border-radius:10px;cursor:pointer;transition:all 0.15s;text-align:left;width:100%;color:#fff;font-family:'Nunito',sans-serif}
+    .upgrade-btn:hover:not(:disabled){border-color:rgba(165,214,167,0.7);background:rgba(255,255,255,0.2);box-shadow:0 4px 16px rgba(0,0,0,0.15)}
     .upgrade-btn:disabled{opacity:0.4;cursor:not-allowed}
-    .upgrade-btn.bought{border-color:rgba(0,255,136,0.6);background:rgba(0,255,136,0.05)}
+    .upgrade-btn.bought{border-color:rgba(165,214,167,0.5);background:rgba(165,214,167,0.1)}
     .upg-icon{font-size:22px;flex-shrink:0}
     .upg-info{flex:1}
-    .upg-name{font-family:'Fredoka One',cursive;font-size:7px;color:var(--neon-green);display:block;margin-bottom:3px}
-    .upg-desc{font-size:10px;color:#778;display:block}
-    .upg-cost{font-family:'Fredoka One',cursive;font-size:8px;color:var(--neon-yellow);white-space:nowrap;flex-shrink:0}
-    .upg-count{font-family:'Fredoka One',cursive;font-size:7px;color:var(--neon-cyan);display:block;margin-top:2px}
-    .prestige-bar-wrap{width:100%;background:rgba(255,255,0,0.1);border:1px solid rgba(255,255,0,0.3);height:8px}
-    .prestige-bar{height:100%;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-magenta));transition:width 0.3s;width:0%}
-    .float-txt{position:fixed;font-family:'Fredoka One',cursive;font-size:10px;color:var(--neon-cyan);pointer-events:none;z-index:9999;animation:floatUp 1s ease-out forwards}
+    .upg-name{font-family:'Fredoka One',cursive;font-size:7px;color:#a5d6a7;display:block;margin-bottom:3px}
+    .upg-desc{font-size:10px;color:rgba(255,255,255,0.65);display:block}
+    .upg-cost{font-family:'Fredoka One',cursive;font-size:8px;color:#ffd54f;white-space:nowrap;flex-shrink:0}
+    .upg-count{font-family:'Fredoka One',cursive;font-size:7px;color:#81d4fa;display:block;margin-top:2px}
+    .prestige-bar-wrap{width:100%;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:4px;height:8px}
+    .prestige-bar{height:100%;background:linear-gradient(90deg,#ffd54f,#f8bbd0);border-radius:4px;transition:width 0.3s;width:0%}
+    .float-txt{position:fixed;font-family:'Fredoka One',cursive;font-size:10px;color:#ffd54f;pointer-events:none;z-index:9999;animation:floatUp 1s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,0.3)}
     @keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
-    .milestone-banner{font-family:'Fredoka One',cursive;font-size:9px;color:var(--neon-yellow);text-shadow:0 0 10px var(--neon-yellow);text-align:center;padding:8px;border:1px solid var(--neon-yellow);background:rgba(255,255,0,0.05);display:none}
+    .milestone-banner{font-family:'Fredoka One',cursive;font-size:9px;color:#ffd54f;text-align:center;padding:8px 16px;border:2px solid rgba(255,213,79,0.5);background:rgba(255,213,79,0.12);border-radius:10px;display:none;backdrop-filter:blur(4px)}
     @media(max-width:500px){#pixel-orb{width:140px;height:140px;font-size:55px}}
   </style>
 </head>
@@ -49,7 +49,7 @@
   </nav>
 
   <div id="screen-start" class="game-screen" style="position:relative;max-width:460px;margin:40px auto;">
-    <h1>👆 PIXEL CLICKER</h1>
+    <h1>👆 SKY CLICKER</h1>
     <p>Click the orb to earn pixels! Buy upgrades to generate pixels automatically. Build your pixel empire!</p>
     <div style="margin:16px 0;font-family:'Fredoka One',cursive;font-size:9px;color:rgba(255,255,255,0.6);">HIGH SCORE: <span class="neon-yellow" id="best-display">0</span></div>
     <button class="pixel-btn btn-cyan" onclick="startClicker()"><span class="btn-span">▶ START CLICKING</span></button>

@@ -16,12 +16,11 @@
     @media(min-width:600px){ .pong-controls-mobile{display:none;} }
     .pong-scores { display:flex; gap:40px; align-items:center; }
     .pong-score-num { font-family:'Fredoka One',cursive; font-size:32px; }
-    .p1-score { color:#81d4fa; text-shadow:0 0 15px #00ffff; }
+    .p1-score { color:#81d4fa; text-shadow:0 2px 8px rgba(129,212,250,0.4); }
     .p2-score { color:#f8bbd0; text-shadow:0 0 15px #ff00ff; }
     .pong-vs { font-family:'Fredoka One',cursive; font-size:12px; color:rgba(255,255,255,0.35); }
-    .speed-btns { display:flex; gap:10px; justify-content:center; }
-    .speed-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid #444; color:#666; background:transparent; cursor:pointer; transition:all 0.2s; }
-    .speed-btn.active { border-color:#ffd54f; color:#ffd54f; box-shadow:0 0 8px rgba(255,255,0,0.3); }
+    .speed-btn { font-family:'Fredoka One',cursive; font-size:8px; padding:8px 14px; border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.08); cursor:pointer; transition:all 0.2s; border-radius:20px; }
+    .speed-btn.active { border-color:#ffd54f; color:#ffd54f; background:rgba(255,213,79,0.1); box-shadow:0 2px 10px rgba(255,213,79,0.2); }
   </style>
 </head>
 <body data-game="pong">
@@ -143,7 +142,7 @@ function update(){
     bdx=Math.abs(bdx)*1.05;
     const rel=(by-(p1y+PAD_H/2))/(PAD_H/2);
     bdy=rel*CW*0.01;
-    particles.push(...genParticles(bx,by,'#00ffff'));
+    particles.push(...genParticles(bx,by,'#ffd54f'));
     PH.playBeep&&PH.playBeep(660,0.08,'sine',0.12);
   }
   // Paddle collision P2
@@ -176,7 +175,7 @@ function genParticles(x,y,color){
 }
 
 function draw(){
-  ctx.fillStyle='#050010'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='rgba(25,100,180,0.55)'; ctx.fillRect(0,0,CW,CH);
   
   // Center line
   ctx.setLineDash([10,10]);
@@ -186,19 +185,19 @@ function draw(){
   ctx.setLineDash([]);
   
   // P1 paddle
-  ctx.shadowColor='#00ffff'; ctx.shadowBlur=15;
-  ctx.fillStyle='#00ffff';
+  ctx.shadowColor='#ffd54f'; ctx.shadowBlur=15;
+  ctx.fillStyle='#ffd54f';
   ctx.fillRect(16,p1y,PAD_W,PAD_H);
   
   // P2 paddle
   ctx.shadowColor='#ff00ff'; ctx.shadowBlur=15;
-  ctx.fillStyle='#ff00ff';
+  ctx.fillStyle='#f8bbd0';
   ctx.fillRect(CW-PAD_W-16,p2y,PAD_W,PAD_H);
   
   // Ball
   const pulse=Math.sin(Date.now()/80)*3;
   ctx.shadowColor='#ffff00'; ctx.shadowBlur=20+pulse;
-  ctx.fillStyle='#ffff00';
+  ctx.fillStyle='rgba(255,255,255,0.25)';
   ctx.fillRect(bx-BALL_S/2,by-BALL_S/2,BALL_S,BALL_S);
   ctx.shadowBlur=0;
   
